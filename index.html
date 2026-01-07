@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottery System | 隨機抽選系統</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #131314;
+            --surface-color: #1E1F20;
+            --primary-color: #A8C7FA;
+            --on-surface: #E3E3E3;
+            --secondary-text: #C4C7C5;
+            --border-color: #444746;
+            --winner-color: #81c995; /* 正取綠色 */
+            --backup-color: #fdd663; /* 備取黃色 */
+            --error-color: #f28b82;
+        }
+
+        body {
+            font-family: 'Roboto', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--on-surface);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin: 0;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #4285F4, #9B72CB, #D96570);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            max-width: 1200px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            flex: 1;
+            min-width: 350px;
+            border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--on-surface);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .setting-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            background-color: #28292A;
+            border-radius: 12px;
+            padding: 10px 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            background: transparent;
+            border: none;
+            color: var(--on-surface);
+            font-size: 1.2rem;
+            width: 100%;
+            outline: none;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            background-color: #28292A;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--on-surface);
+            padding: 15px;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+            box-sizing: border-box;
+            outline: none;
+        }
+        textarea:focus { border-color: var(--primary-color); }
+
+        .generate-btn {
+            width: 100%; margin-top: 24px; padding: 16px; border-radius: 50px; border: none;
+            background: linear-gradient(135deg, #E2E2E2, #FFFFFF);
+            color: #000; font-size: 1.1rem; font-weight: 500; cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+        .generate-btn:hover { opacity: 0.9; }
+        .generate-btn:active { transform: scale(0.98); }
+
+        /* 結果區樣式 */
+        .result-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .result-block {
+            background-color: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            animation: fadeIn 0.5s ease backwards;
+        }
+        
+        .result-header {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .name-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .name-tag {
+            background-color: #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        .stat-info {
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Lottery System</h1>
+    <p style="color: var(--secondary-text); font-size: 0.9rem;">Generic Random Selection Tool</p>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>📝 設定與名單輸入</h2>
+        
+        <div class="setting-row">
+            <div class="input-group">
+                <label>正取人數 (Main)</label>
+                <input type="number" id="count-main" value="100" min="1">
+            </div>
+            <div class="input-group">
+                <label>備取人數 (Backup)</label>
+                <input type="number" id="count-backup" value="10" min="0">
+            </div>
+        </div>
+
+        <label style="color: var(--secondary-text); margin-bottom: 8px; display:block;">
+            貼上名單 (一行一個名字，支援 Excel 複製)：
+        </label>
+        <textarea id="input-names" placeholder="例如：&#10;王小明&#10;陳小美&#10;張志明&#10;..."></textarea>
+
+        <div id="input-stat" class="stat-info">目前行數: 0</div>
+
+        <button class="generate-btn" onclick="runLottery()">
+            開始抽選
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>📊 抽選結果</h2>
+        <div id="result-area" class="result-section">
+            <div style="color: var(--secondary-text); margin-top: 40px; text-align: center;">
+                <span style="font-size: 2rem;">🎲</span>
+                <p>請輸入名單並設定人數<br>落選者將不會顯示</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const nameInput = document.getElementById('input-names');
+    const statInfo = document.getElementById('input-stat');
+
+    // 監聽輸入並更新行數統計
+    nameInput.addEventListener('input', () => {
+        const lines = nameInput.value.split('\n').filter(line => line.trim() !== '').length;
+        statInfo.textContent = `偵測到有效名單: ${lines} 人`;
+    });
+
+    function runLottery() {
+        const rawText = document.getElementById('input-names').value;
+        const countMain = parseInt(document.getElementById('count-main').value) || 0;
+        const countBackup = parseInt(document.getElementById('count-backup').value) || 0;
+        const resultArea = document.getElementById('result-area');
+
+        // 1. 資料清洗
+        let names = rawText.split('\n')
+            .map(n => n.trim())
+            .filter(n => n !== '');
+
+        // 2. 驗證
+        if (names.length === 0) {
+            alert("❌ 錯誤：名單是空的！請先貼上名字。");
+            return;
+        }
+        
+        if (countMain <= 0) {
+            alert("❌ 錯誤：正取人數必須大於 0。");
+            return;
+        }
+
+        if (names.length < (countMain + countBackup)) {
+            const confirmMsg = `⚠️ 警告：\n名單總人數 (${names.length}) 少於「正取+備取」的需求 (${countMain + countBackup})。\n\n確定要繼續嗎？(不足的部分將會顯示從缺)`;
+            if (!confirm(confirmMsg)) return;
+        }
+
+        // 3. 洗牌 (Fisher-Yates)
+        for (let i = names.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [names[i], names[j]] = [names[j], names[i]];
+        }
+
+        // 4. 切片
+        const winners = names.slice(0, countMain);
+        const backups = names.slice(countMain, countMain + countBackup);
+        
+        // 5. 輸出
+        let html = '';
+
+        // 正取
+        html += `
+        <div class="result-block" style="border-left: 4px solid var(--winner-color);">
+            <div class="result-header" style="color: var(--winner-color);">
+                <span>🎉 正取名單</span>
+                <span class="badge">${winners.length} 人</span>
+            </div>
+            <div class="name-list">
+                ${winners.map((n, i) => `<span class="name-tag">${i+1}. ${n}</span>`).join('')}
+            </div>
+        </div>`;
+
+        // 備取
+        if (countBackup > 0) {
+            html += `
+            <div class="result-block" style="border-left: 4px solid var(--backup-color); animation-delay: 0.2s">
+                <div class="result-header" style="color: var(--backup-color);">
+                    <span>⚠️ 備取名單</span>
+                    <span class="badge">${backups.length} 人</span>
+                </div>
+                <div class="name-list">
+                    ${backups.length > 0 
+                        ? backups.map((n, i) => `<span class="name-tag">備${i+1}. ${n}</span>`).join('')
+                        : '<span style="color:gray; font-style:italic;">(無人進入備取)</span>'}
+                </div>
+            </div>`;
+        }
+
+        // 統計
+        const losersCount = Math.max(0, names.length - countMain - countBackup);
+        html += `
+        <div style="text-align: right; font-size: 0.8rem; color: #666; margin-top: 10px;">
+            總參加: ${names.length} 人 | 落選: ${losersCount} 人 (未顯示)
+        </div>`;
+
+        resultArea.innerHTML = html;
+    }
+</script>
+</body>
+</html>
