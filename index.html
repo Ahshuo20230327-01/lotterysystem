@@ -164,20 +164,33 @@
             background: rgba(255,255,255,0.1);
         }
 
+        /* --- 這裡做了修改，改成垂直排列 --- */
         .name-list {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            flex-direction: column; /* 關鍵：改成垂直方向 */
+            gap: 4px;             /* 每個名字之間的間距 */
             line-height: 1.6;
             max-height: 400px;
             overflow-y: auto;
+            padding-right: 5px;   /* 預留捲軸空間 */
         }
 
         .name-tag {
-            background-color: #333;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.95rem;
+            background-color: #28292A; /* 改深一點的背景色，比較像清單 */
+            padding: 6px 12px;         /* 增加一點內距 */
+            border-radius: 6px;
+            font-size: 1rem;           /* 字體稍微加大 */
+            border-left: 3px solid transparent; /* 預留左側裝飾線 */
+        }
+        
+        /* 讓正取名單的項目左側有一條細綠線，增加辨識度 */
+        .winner-item {
+            border-left-color: var(--winner-color);
+        }
+        
+        /* 讓備取名單的項目左側有一條細黃線 */
+        .backup-item {
+            border-left-color: var(--backup-color);
         }
 
         .stat-info {
@@ -196,6 +209,12 @@
             justify-content: flex-end;
             margin-bottom: 5px;
         }
+
+        /* 自訂捲軸樣式 */
+        .name-list::-webkit-scrollbar { width: 8px; }
+        .name-list::-webkit-scrollbar-track { background: transparent; }
+        .name-list::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        .name-list::-webkit-scrollbar-thumb:hover { background: #555; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -239,7 +258,7 @@
         <div id="result-area" class="result-section">
             <div style="color: var(--secondary-text); margin-top: 40px; text-align: center;">
                 <span style="font-size: 2rem;">🔒</span>
-                <p>本系統使用 Web Crypto API<br>提供加密安全亂數</p>
+                <p>本系統使用 Web Crypto API<br>提供賭場級加密安全亂數</p>
             </div>
         </div>
     </div>
@@ -249,19 +268,15 @@
     const nameInput = document.getElementById('input-names');
     const statInfo = document.getElementById('input-stat');
 
-    // 監聽輸入並更新行數統計
     nameInput.addEventListener('input', () => {
         const lines = nameInput.value.split('\n').filter(line => line.trim() !== '').length;
         statInfo.textContent = `偵測到有效名單: ${lines} 人`;
     });
 
-    // 核心：加密安全等級的隨機函式 (Casino Grade Random)
+    // 核心：加密安全等級的隨機函式
     function secureRandom() {
-        // 建立一個 32 位元的無號整數緩衝區
         const array = new Uint32Array(1);
-        // 使用瀏覽器的加密安全亂數產生器填入數值
         window.crypto.getRandomValues(array);
-        // 將整數轉為 0 ~ 1 之間的浮點數 (類似 Math.random() 但更安全)
         return array[0] / (0xFFFFFFFF + 1);
     }
 
@@ -271,12 +286,10 @@
         const countBackup = parseInt(document.getElementById('count-backup').value) || 0;
         const resultArea = document.getElementById('result-area');
 
-        // 1. 資料清洗
         let names = rawText.split('\n')
             .map(n => n.trim())
             .filter(n => n !== '');
 
-        // 2. 驗證
         if (names.length === 0) {
             alert("❌ 錯誤：名單是空的！請先貼上名字。");
             return;
@@ -292,24 +305,20 @@
             if (!confirm(confirmMsg)) return;
         }
 
-        // 3. 洗牌 (Fisher-Yates with Secure Random)
+        // 洗牌
         for (let i = names.length - 1; i > 0; i--) {
-            // 使用自定義的 secureRandom() 替換原本的 Math.random()
             const j = Math.floor(secureRandom() * (i + 1));
             [names[i], names[j]] = [names[j], names[i]];
         }
 
-        // 4. 切片
         const winners = names.slice(0, countMain);
         const backups = names.slice(countMain, countMain + countBackup);
         
-        // 5. 輸出
         let html = '';
         
-        // 顯示安全標章
         html += `<div class="secure-tag">🔒 Random Source: Web Crypto API (CSPRNG)</div>`;
 
-        // 正取
+        // 正取區塊 (JS 產生 HTML 時加入 winner-item class)
         html += `
         <div class="result-block" style="border-left: 4px solid var(--winner-color);">
             <div class="result-header" style="color: var(--winner-color);">
@@ -317,11 +326,11 @@
                 <span class="badge">${winners.length} 人</span>
             </div>
             <div class="name-list">
-                ${winners.map((n, i) => `<span class="name-tag">${i+1}. ${n}</span>`).join('')}
+                ${winners.map((n, i) => `<span class="name-tag winner-item">${i+1}. ${n}</span>`).join('')}
             </div>
         </div>`;
 
-        // 備取
+        // 備取區塊
         if (countBackup > 0) {
             html += `
             <div class="result-block" style="border-left: 4px solid var(--backup-color); animation-delay: 0.2s">
@@ -331,13 +340,12 @@
                 </div>
                 <div class="name-list">
                     ${backups.length > 0 
-                        ? backups.map((n, i) => `<span class="name-tag">備${i+1}. ${n}</span>`).join('')
+                        ? backups.map((n, i) => `<span class="name-tag backup-item">備${i+1}. ${n}</span>`).join('')
                         : '<span style="color:gray; font-style:italic;">(無人進入備取)</span>'}
                 </div>
             </div>`;
         }
 
-        // 統計
         const losersCount = Math.max(0, names.length - countMain - countBackup);
         html += `
         <div style="text-align: right; font-size: 0.8rem; color: #666; margin-top: 10px;">
@@ -349,4 +357,3 @@
 </script>
 </body>
 </html>
-
