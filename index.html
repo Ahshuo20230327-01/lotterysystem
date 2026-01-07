@@ -3,401 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottery System | 加密安全隨機版</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Lottery Pro | 加密安全隨機抽選</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #131314;
-            --surface-color: #1E1F20;
-            --primary-color: #A8C7FA;
-            --on-surface: #E3E3E3;
-            --secondary-text: #C4C7C5;
-            --border-color: #444746;
-            --winner-color: #81c995; /* 正取綠色 */
-            --backup-color: #fdd663; /* 備取黃色 */
-            --error-color: #f28b82;
+            --bg-body: #121212;
+            --bg-card: #1E1E1E;
+            --bg-input: #2D2D2D;
+            --text-main: #E0E0E0;
+            --text-muted: #A0A0A0;
+            --accent: #8AB4F8;
+            --success: #81C995;
+            --warning: #FDD663;
+            --danger: #F28B82;
+            --border: #3E3E3E;
         }
 
+        * { box-sizing: border-box; outline: none; }
+
         body {
-            font-family: 'Roboto', 'Noto Sans TC', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--on-surface);
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             margin: 0;
             padding: 20px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            margin-top: 20px;
-        }
+        header { margin: 20px 0 30px; text-align: center; }
+        h1 { margin: 0; font-size: 1.8rem; background: linear-gradient(45deg, #8AB4F8, #C58AF9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p.subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 5px; }
 
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 500;
-            margin: 0;
-            letter-spacing: 1px;
-            background: linear-gradient(90deg, #4285F4, #9B72CB, #D96570);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
+        .main-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 24px;
-            max-width: 1200px;
             width: 100%;
-            justify-content: center;
+            max-width: 1200px;
         }
 
         .card {
-            background-color: var(--surface-color);
-            border-radius: 24px;
+            background: var(--bg-card);
+            border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            flex: 1;
-            min-width: 350px;
-            border: 1px solid transparent;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
         }
 
-        h2 {
-            font-size: 1.2rem;
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: var(--on-surface);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-
-        .setting-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            background-color: #28292A;
-            border-radius: 12px;
-            padding: 10px 16px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-group label {
-            font-size: 0.8rem;
-            color: var(--secondary-text);
-            margin-bottom: 5px;
-        }
-
-        input[type="number"] {
-            background: transparent;
-            border: none;
-            color: var(--on-surface);
-            font-size: 1.2rem;
-            width: 100%;
-            outline: none;
-            font-family: 'Roboto Mono', monospace;
-        }
-
-        textarea {
-            width: 100%;
-            height: 300px;
-            background-color: #28292A;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--on-surface);
-            padding: 15px;
-            font-family: 'Noto Sans TC', sans-serif;
-            font-size: 1rem;
-            resize: vertical;
-            box-sizing: border-box;
-            outline: none;
-        }
-        textarea:focus { border-color: var(--primary-color); }
-
-        .generate-btn {
-            width: 100%; margin-top: 24px; padding: 16px; border-radius: 50px; border: none;
-            background: linear-gradient(135deg, #E2E2E2, #FFFFFF);
-            color: #000; font-size: 1.1rem; font-weight: 500; cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-        }
-        .generate-btn:hover { opacity: 0.9; }
-        .generate-btn:active { transform: scale(0.98); }
-
-        /* 結果區樣式 */
-        .result-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            height: 100%;
-        }
-
-        .result-block {
-            background-color: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            padding: 15px;
-            animation: fadeIn 0.5s ease backwards;
-        }
-        
-        .result-header {
-            font-size: 1rem;
-            font-weight: bold;
-            margin-bottom: 10px;
+        .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+        .card-title { font-size: 1.25rem; font-weight: 700; margin: 0; }
+
+        /* 輸入區樣式 */
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        
+        .input-group { background: var(--bg-input); padding: 10px 15px; border-radius: 8px; }
+        .input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+        .input-group input { width: 100%; background: transparent; border: none; color: white; font-size: 1.2rem; font-family: 'Roboto Mono', monospace; }
+
+        textarea {
+            width: 100%; height: 300px;
+            background: var(--bg-input);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 15px;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        textarea:focus { border-color: var(--accent); }
+
+        .status-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);
+        }
+        .btn-text { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; }
+        .btn-text:hover { text-decoration: underline; }
+
+        .btn-primary {
+            width: 100%; margin-top: 20px; padding: 14px;
+            border-radius: 50px; border: none;
+            background: var(--accent); color: #000;
+            font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; transition: filter 0.2s, transform 0.1s;
+        }
+        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* 結果區樣式 */
+        .result-container { flex: 1; display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
+        
+        .result-group {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex; flex-direction: column;
+            max-height: 45vh; /* 限制高度讓卷軸出現 */
+        }
+        .result-group.winner { border-left: 4px solid var(--success); }
+        .result-group.backup { border-left: 4px solid var(--warning); }
+
+        .group-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; font-weight: bold; font-size: 1rem;
         }
 
-        /* 複製按鈕樣式 */
-        .copy-btn {
-            background: transparent;
-            border: 1px solid var(--secondary-text);
-            color: var(--secondary-text);
-            padding: 4px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            margin-left: 10px;
-            transition: all 0.2s;
-            font-family: 'Noto Sans TC', sans-serif;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .copy-btn:hover {
-            background: rgba(255,255,255,0.1);
-            color: var(--on-surface);
-            border-color: var(--on-surface);
-        }
-
-        .badge {
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            background: rgba(255,255,255,0.1);
-            margin-left: auto; /* 將徽章推到標題和按鈕中間 */
-            margin-right: 10px;
-        }
-
-        /* 名單垂直排列 */
-        .name-list {
-            display: flex;
-            flex-direction: column; 
-            gap: 4px;             
-            line-height: 1.6;
-            max-height: 400px;
+        .list-scroll {
             overflow-y: auto;
-            padding-right: 5px;   
+            padding-right: 5px;
+            display: flex; flex-direction: column; gap: 6px;
         }
+        
+        /* 自定義捲軸 */
+        .list-scroll::-webkit-scrollbar { width: 6px; }
+        .list-scroll::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
 
         .name-tag {
-            background-color: #28292A;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 1rem;
-            border-left: 3px solid transparent;
-            color: var(--on-surface);
+            background: var(--bg-input); padding: 8px 12px; border-radius: 6px;
+            font-size: 0.95rem; display: flex; justify-content: space-between;
+            
+            /* 安全性修正：防止長字串撐爆版面 */
+            word-break: break-all;
+            white-space: pre-wrap; /* 保留換行但允許自動折行 */
         }
-        
-        .winner-item { border-left-color: var(--winner-color); }
-        .backup-item { border-left-color: var(--backup-color); }
-
-        .stat-info {
-            color: var(--secondary-text);
-            font-size: 0.9rem;
-            text-align: right;
-            margin-top: 5px;
-        }
-        
-        .secure-tag {
-            color: #81c995;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            justify-content: flex-end;
-            margin-bottom: 5px;
+        .index-num { 
+            color: var(--text-muted); 
+            margin-right: 8px; 
+            font-family: 'Roboto Mono', monospace;
+            flex-shrink: 0; /* 防止編號被擠壓 */
         }
 
-        .name-list::-webkit-scrollbar { width: 8px; }
-        .name-list::-webkit-scrollbar-track { background: transparent; }
-        .name-list::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
-        .name-list::-webkit-scrollbar-thumb:hover { background: #555; }
+        .empty-state {
+            flex: 1; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            color: var(--text-muted); text-align: center;
+            opacity: 0.7;
+        }
+        .empty-icon { font-size: 3rem; margin-bottom: 15px; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .action-bar { display: flex; gap: 10px; margin-top: auto; padding-top: 15px; }
+        .btn-action {
+            flex: 1; padding: 10px; border-radius: 8px;
+            border: 1px solid var(--border); background: transparent;
+            color: var(--text-main); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-action:hover { background: rgba(255,255,255,0.1); }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* RWD 調整 */
+        @media (max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; }
+            .card { min-height: auto; }
+            .result-group { max-height: 300px; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Lottery System</h1>
-    <p style="color: var(--secondary-text); font-size: 0.9rem;">Secure Random Selection Tool</p>
+    <h1>Lottery Pro</h1>
+    <p class="subtitle">Secure Client-Side Randomization</p>
 </header>
 
-<div class="container">
+<div class="main-container">
+    <!-- 設定卡片 -->
     <div class="card">
-        <h2>📝 設定與名單輸入</h2>
-        
-        <div class="setting-row">
+        <div class="card-header">
+            <h2 class="card-title">📝 名單與設定</h2>
+            <button class="btn-text" onclick="app.clearInput()">清空</button>
+        </div>
+
+        <div class="settings-grid">
             <div class="input-group">
-                <label>正取人數 (Main)</label>
+                <label>正取 (Main)</label>
                 <input type="number" id="count-main" value="20" min="1">
             </div>
             <div class="input-group">
-                <label>備取人數 (Backup)</label>
+                <label>備取 (Backup)</label>
                 <input type="number" id="count-backup" value="3" min="0">
             </div>
         </div>
 
-        <label style="color: var(--secondary-text); margin-bottom: 8px; display:block;">
-            貼上名單 (一行一個名字，支援 Excel 複製)：
+        <label style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px; display:block;">
+            名單輸入 (一行一筆，支援 Excel 貼上)：
         </label>
-        <textarea id="input-names" placeholder="例如：&#10;王小明&#10;陳小美&#10;張志明&#10;..."></textarea>
+        <textarea id="input-names" placeholder="例如：&#10;王小明&#10;陳小美&#10;..."></textarea>
+        
+        <div class="status-bar">
+            <span id="line-count">0 人</span>
+            <span style="font-size: 0.75rem; color: #555;">Auto-saved locally</span>
+        </div>
 
-        <div id="input-stat" class="stat-info">目前行數: 0</div>
-
-        <button class="generate-btn" onclick="runLottery()">
-            開始抽選
-        </button>
+        <button class="btn-primary" onclick="app.runLottery()">開始抽選</button>
     </div>
 
+    <!-- 結果卡片 -->
     <div class="card">
-        <h2>📊 抽選結果</h2>
-        <div id="result-area" class="result-section">
-            <div style="color: var(--secondary-text); margin-top: 40px; text-align: center;">
-                <span style="font-size: 2rem;">🔒</span>
-                <p>本系統使用 Web Crypto API<br>提供賭場級加密安全亂數</p>
+        <div class="card-header">
+            <h2 class="card-title">📊 抽選結果</h2>
+            <div class="secure-badge" style="font-size:0.75rem; color:var(--success); display:flex; align-items:center; gap:4px;">
+                🔒 Web Crypto API
             </div>
+        </div>
+
+        <div id="result-area" class="result-container">
+            <!-- 預設空狀態 -->
+            <div class="empty-state">
+                <div class="empty-icon">🎲</div>
+                <p>準備就緒<br>請輸入名單並點擊開始</p>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn-action" id="btn-copy" onclick="app.copyResults()" disabled>
+                <span>📋</span> 複製文字
+            </button>
+            <button class="btn-action" id="btn-download" onclick="app.downloadResults()" disabled>
+                <span>💾</span> 下載 .txt
+            </button>
         </div>
     </div>
 </div>
 
 <script>
-    const nameInput = document.getElementById('input-names');
-    const statInfo = document.getElementById('input-stat');
+    const app = {
+        els: {
+            input: document.getElementById('input-names'),
+            countMain: document.getElementById('count-main'),
+            countBackup: document.getElementById('count-backup'),
+            lineCount: document.getElementById('line-count'),
+            resultArea: document.getElementById('result-area'),
+            btnCopy: document.getElementById('btn-copy'),
+            btnDownload: document.getElementById('btn-download')
+        },
+        currentResultText: '', // 儲存純文字結果供複製/下載
 
-    nameInput.addEventListener('input', () => {
-        const lines = nameInput.value.split('\n').filter(line => line.trim() !== '').length;
-        statInfo.textContent = `偵測到有效名單: ${lines} 人`;
-    });
+        init() {
+            // 防抖監聽：避免大量貼上時卡頓 (Delay 300ms)
+            this.els.input.addEventListener('input', this.debounce(() => {
+                this.updateCount();
+                // 簡易 localStorage (可選)
+                localStorage.setItem('lottery_names', this.els.input.value);
+            }, 300));
 
-    // 核心：加密安全等級的隨機函式
-    function secureRandom() {
-        const array = new Uint32Array(1);
-        window.crypto.getRandomValues(array);
-        return array[0] / (0xFFFFFFFF + 1);
-    }
+            // 恢復上次輸入
+            const saved = localStorage.getItem('lottery_names');
+            if(saved) {
+                this.els.input.value = saved;
+                this.updateCount();
+            }
+        },
 
-    // 複製文字功能
-    function copyList(btnElement, listId) {
-        const listContainer = document.getElementById(listId);
-        if(!listContainer) return;
-        
-        // 取得該區塊內的文字內容 (innerText 會自動處理換行)
-        const textToCopy = listContainer.innerText;
+        debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        },
 
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalHtml = btnElement.innerHTML;
-            btnElement.innerHTML = "✅ 已複製";
-            btnElement.style.borderColor = "#81c995";
-            btnElement.style.color = "#81c995";
-            
-            setTimeout(() => {
-                btnElement.innerHTML = originalHtml;
-                btnElement.style.borderColor = "";
-                btnElement.style.color = "";
-            }, 2000);
-        }).catch(err => {
-            console.error('複製失敗:', err);
-            alert("複製失敗，請手動複製。");
-        });
-    }
+        // 安全性修正：HTML 轉義函式，防止 XSS
+        escapeHtml(text) {
+            if (!text) return text;
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        },
 
-    function runLottery() {
-        const rawText = document.getElementById('input-names').value;
-        const countMain = parseInt(document.getElementById('count-main').value) || 0;
-        const countBackup = parseInt(document.getElementById('count-backup').value) || 0;
-        const resultArea = document.getElementById('result-area');
+        // 安全性修正：移除可能導致問題的隱形字元 (如 Zero Width Space)
+        sanitizeInput(text) {
+             // 移除 C0 控制字元 (除了換行 \n 和 Tab \t) 和隱形字元
+            return text.replace(/[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g, '');
+        },
 
-        let names = rawText.split('\n')
-            .map(n => n.trim())
-            .filter(n => n !== '');
+        updateCount() {
+            const count = this.getNames().length;
+            this.els.lineCount.textContent = `${count} 人`;
+        },
 
-        if (names.length === 0) {
-            alert("❌ 錯誤：名單是空的！請先貼上名字。");
-            return;
-        }
-        
-        if (countMain <= 0) {
-            alert("❌ 錯誤：正取人數必須大於 0。");
-            return;
-        }
+        getNames() {
+            return this.els.input.value.split('\n')
+                .map(line => this.sanitizeInput(line.trim())) // 加入 sanitize
+                .filter(line => line !== '');
+        },
 
-        if (names.length < (countMain + countBackup)) {
-            const confirmMsg = `⚠️ 警告：\n名單總人數 (${names.length}) 少於「正取+備取」的需求 (${countMain + countBackup})。\n\n確定要繼續嗎？(不足的部分將會顯示從缺)`;
-            if (!confirm(confirmMsg)) return;
-        }
+        clearInput() {
+            if(confirm('確定要清空所有名單嗎？')) {
+                this.els.input.value = '';
+                this.updateCount();
+                localStorage.removeItem('lottery_names');
+            }
+        },
 
-        // 洗牌
-        for (let i = names.length - 1; i > 0; i--) {
-            const j = Math.floor(secureRandom() * (i + 1));
-            [names[i], names[j]] = [names[j], names[i]];
-        }
+        // Fisher-Yates Shuffle with Web Crypto API
+        secureShuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const randomBuffer = new Uint32Array(1);
+                window.crypto.getRandomValues(randomBuffer);
+                // 產生 0 到 i 的隨機索引
+                const j = Math.floor((randomBuffer[0] / (0xFFFFFFFF + 1)) * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        },
 
-        const winners = names.slice(0, countMain);
-        const backups = names.slice(countMain, countMain + countBackup);
-        
-        let html = '';
-        
-        html += `<div class="secure-tag">🔒 Random Source: Web Crypto API (CSPRNG)</div>`;
+        runLottery() {
+            const names = this.getNames();
+            const countMain = parseInt(this.els.countMain.value) || 0;
+            const countBackup = parseInt(this.els.countBackup.value) || 0;
 
-        // === 正取區塊 ===
-        html += `
-        <div class="result-block" style="border-left: 4px solid var(--winner-color);">
-            <div class="result-header" style="color: var(--winner-color);">
-                <span>🎉 正取名單</span>
-                <span class="badge">${winners.length} 人</span>
-                <button class="copy-btn" onclick="copyList(this, 'list-winners')">📋 複製</button>
-            </div>
-            <div class="name-list" id="list-winners">
-                ${winners.map((n, i) => `<span class="name-tag winner-item">${i+1}. ${n}</span>`).join('')}
-            </div>
-        </div>`;
+            if (names.length === 0) return alert('❌ 請先輸入名單');
+            if (countMain <= 0) return alert('❌ 正取人數必須大於 0');
 
-        // === 備取區塊 ===
-        if (countBackup > 0) {
+            if (names.length < (countMain + countBackup)) {
+                if (!confirm(`⚠️ 名單人數 (${names.length}) 少於總需求 (${countMain + countBackup})，是否繼續？`)) return;
+            }
+
+            // 執行洗牌
+            const shuffled = this.secureShuffle([...names]);
+            const winners = shuffled.slice(0, countMain);
+            const backups = shuffled.slice(countMain, countMain + countBackup);
+
+            this.renderResults(winners, backups);
+            this.prepareExportData(winners, backups, names.length);
+        },
+
+        renderResults(winners, backups) {
+            let html = '';
+
+            // 渲染列表的 Helper，加入 escapeHtml
+            const renderList = (list, type) => {
+                if (list.length === 0) {
+                     return `<div style="padding:10px; color:gray; font-style:italic; text-align:center">無人${type === 'backup' ? '備取' : '正取'}</div>`;
+                }
+                return list.map((n, i) => `
+                    <div class="name-tag">
+                        <span><span class="index-num">${type === 'backup' ? '備' : ''}${i+1}.</span>${this.escapeHtml(n)}</span>
+                    </div>
+                `).join('');
+            };
+
+            // 正取區塊
             html += `
-            <div class="result-block" style="border-left: 4px solid var(--backup-color); animation-delay: 0.2s">
-                <div class="result-header" style="color: var(--backup-color);">
-                    <span>⚠️ 備取名單</span>
-                    <span class="badge">${backups.length} 人</span>
-                    ${backups.length > 0 ? `<button class="copy-btn" onclick="copyList(this, 'list-backups')">📋 複製</button>` : ''}
+            <div class="result-group winner">
+                <div class="group-header">
+                    <span style="color:var(--success)">🎉 正取名單</span>
+                    <span>${winners.length} 人</span>
                 </div>
-                <div class="name-list" id="list-backups">
-                    ${backups.length > 0 
-                        ? backups.map((n, i) => `<span class="name-tag backup-item">備${i+1}. ${n}</span>`).join('')
-                        : '<span style="color:gray; font-style:italic;">(無人進入備取)</span>'}
+                <div class="list-scroll">
+                    ${renderList(winners, 'main')}
                 </div>
             </div>`;
+
+            // 備取區塊
+            if (backups.length > 0 || parseInt(this.els.countBackup.value) > 0) {
+                html += `
+                <div class="result-group backup">
+                    <div class="group-header">
+                        <span style="color:var(--warning)">⚠️ 備取名單</span>
+                        <span>${backups.length} 人</span>
+                    </div>
+                    <div class="list-scroll">
+                        ${renderList(backups, 'backup')}
+                    </div>
+                </div>`;
+            }
+
+            this.els.resultArea.innerHTML = html;
+        },
+
+        prepareExportData(winners, backups, totalCount) {
+            const time = new Date().toLocaleString('zh-TW');
+            let text = `=== 抽選結果報告 ===\n時間: ${time}\n總人數: ${totalCount}\n\n`;
+            
+            text += `【正取名單】(${winners.length}人)\n`;
+            winners.forEach((n, i) => text += `${i+1}. ${n}\n`);
+            
+            text += `\n【備取名單】(${backups.length}人)\n`;
+            backups.forEach((n, i) => text += `備${i+1}. ${n}\n`);
+
+            this.currentResultText = text;
+            this.els.btnCopy.disabled = false;
+            this.els.btnDownload.disabled = false;
+        },
+
+        copyResults() {
+            if(!this.currentResultText) return;
+            navigator.clipboard.writeText(this.currentResultText).then(() => {
+                const originalText = this.els.btnCopy.innerHTML;
+                this.els.btnCopy.innerHTML = '✅ 已複製';
+                setTimeout(() => this.els.btnCopy.innerHTML = originalText, 2000);
+            }).catch(() => alert('複製失敗'));
+        },
+
+        downloadResults() {
+            if(!this.currentResultText) return;
+            const blob = new Blob([this.currentResultText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lottery_result_${new Date().getTime()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
+    };
 
-        const losersCount = Math.max(0, names.length - countMain - countBackup);
-        html += `
-        <div style="text-align: right; font-size: 0.8rem; color: #666; margin-top: 10px;">
-            總參加: ${names.length} 人 | 落選: ${losersCount} 人 (未顯示)
-        </div>`;
-
-        resultArea.innerHTML = html;
-    }
+    app.init();
 </script>
 </body>
 </html>
