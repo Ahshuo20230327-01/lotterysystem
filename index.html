@@ -157,41 +157,59 @@
             align-items: center;
         }
 
+        /* 複製按鈕樣式 */
+        .copy-btn {
+            background: transparent;
+            border: 1px solid var(--secondary-text);
+            color: var(--secondary-text);
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            transition: all 0.2s;
+            font-family: 'Noto Sans TC', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--on-surface);
+            border-color: var(--on-surface);
+        }
+
         .badge {
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 0.8rem;
             background: rgba(255,255,255,0.1);
+            margin-left: auto; /* 將徽章推到標題和按鈕中間 */
+            margin-right: 10px;
         }
 
-        /* --- 這裡做了修改，改成垂直排列 --- */
+        /* 名單垂直排列 */
         .name-list {
             display: flex;
-            flex-direction: column; /* 關鍵：改成垂直方向 */
-            gap: 4px;             /* 每個名字之間的間距 */
+            flex-direction: column; 
+            gap: 4px;             
             line-height: 1.6;
             max-height: 400px;
             overflow-y: auto;
-            padding-right: 5px;   /* 預留捲軸空間 */
+            padding-right: 5px;   
         }
 
         .name-tag {
-            background-color: #28292A; /* 改深一點的背景色，比較像清單 */
-            padding: 6px 12px;         /* 增加一點內距 */
+            background-color: #28292A;
+            padding: 6px 12px;
             border-radius: 6px;
-            font-size: 1rem;           /* 字體稍微加大 */
-            border-left: 3px solid transparent; /* 預留左側裝飾線 */
+            font-size: 1rem;
+            border-left: 3px solid transparent;
+            color: var(--on-surface);
         }
         
-        /* 讓正取名單的項目左側有一條細綠線，增加辨識度 */
-        .winner-item {
-            border-left-color: var(--winner-color);
-        }
-        
-        /* 讓備取名單的項目左側有一條細黃線 */
-        .backup-item {
-            border-left-color: var(--backup-color);
-        }
+        .winner-item { border-left-color: var(--winner-color); }
+        .backup-item { border-left-color: var(--backup-color); }
 
         .stat-info {
             color: var(--secondary-text);
@@ -210,7 +228,6 @@
             margin-bottom: 5px;
         }
 
-        /* 自訂捲軸樣式 */
         .name-list::-webkit-scrollbar { width: 8px; }
         .name-list::-webkit-scrollbar-track { background: transparent; }
         .name-list::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
@@ -280,6 +297,31 @@
         return array[0] / (0xFFFFFFFF + 1);
     }
 
+    // 複製文字功能
+    function copyList(btnElement, listId) {
+        const listContainer = document.getElementById(listId);
+        if(!listContainer) return;
+        
+        // 取得該區塊內的文字內容 (innerText 會自動處理換行)
+        const textToCopy = listContainer.innerText;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalHtml = btnElement.innerHTML;
+            btnElement.innerHTML = "✅ 已複製";
+            btnElement.style.borderColor = "#81c995";
+            btnElement.style.color = "#81c995";
+            
+            setTimeout(() => {
+                btnElement.innerHTML = originalHtml;
+                btnElement.style.borderColor = "";
+                btnElement.style.color = "";
+            }, 2000);
+        }).catch(err => {
+            console.error('複製失敗:', err);
+            alert("複製失敗，請手動複製。");
+        });
+    }
+
     function runLottery() {
         const rawText = document.getElementById('input-names').value;
         const countMain = parseInt(document.getElementById('count-main').value) || 0;
@@ -318,27 +360,29 @@
         
         html += `<div class="secure-tag">🔒 Random Source: Web Crypto API (CSPRNG)</div>`;
 
-        // 正取區塊 (JS 產生 HTML 時加入 winner-item class)
+        // === 正取區塊 ===
         html += `
         <div class="result-block" style="border-left: 4px solid var(--winner-color);">
             <div class="result-header" style="color: var(--winner-color);">
                 <span>🎉 正取名單</span>
                 <span class="badge">${winners.length} 人</span>
+                <button class="copy-btn" onclick="copyList(this, 'list-winners')">📋 複製</button>
             </div>
-            <div class="name-list">
+            <div class="name-list" id="list-winners">
                 ${winners.map((n, i) => `<span class="name-tag winner-item">${i+1}. ${n}</span>`).join('')}
             </div>
         </div>`;
 
-        // 備取區塊
+        // === 備取區塊 ===
         if (countBackup > 0) {
             html += `
             <div class="result-block" style="border-left: 4px solid var(--backup-color); animation-delay: 0.2s">
                 <div class="result-header" style="color: var(--backup-color);">
                     <span>⚠️ 備取名單</span>
                     <span class="badge">${backups.length} 人</span>
+                    ${backups.length > 0 ? `<button class="copy-btn" onclick="copyList(this, 'list-backups')">📋 複製</button>` : ''}
                 </div>
-                <div class="name-list">
+                <div class="name-list" id="list-backups">
                     ${backups.length > 0 
                         ? backups.map((n, i) => `<span class="name-tag backup-item">備${i+1}. ${n}</span>`).join('')
                         : '<span style="color:gray; font-style:italic;">(無人進入備取)</span>'}
