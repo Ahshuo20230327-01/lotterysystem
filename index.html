@@ -114,7 +114,6 @@
             background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        /* 已移除 .subtitle 樣式與元素 */
 
         .card {
             background: var(--bg-card); border-radius: var(--radius); padding: 24px;
@@ -270,6 +269,8 @@
             display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
         }
         .btn-action:hover:not(:disabled) { background: #3f3f46; border-color: #52525b; }
+        /* 視覺回饋：複製成功樣式 */
+        .btn-action.copied { background: var(--success); border-color: var(--success); color: white; }
         .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -627,7 +628,7 @@
         getNames() {
             const rawNames = this.els.input.value.split('\n')
                 .map(line => this.sanitizeInput(line))
-                .filter(line => line !== '');
+                .filter(line => line !== '' && !/^\s*$/.test(line)); // 更嚴格的空行過濾
             
             if (this.els.toggleDedup.checked) {
                 return [...new Set(rawNames)];
@@ -822,6 +823,13 @@
             if(!this.currentResultText) return;
             navigator.clipboard.writeText(this.currentResultText).then(() => {
                 Toast.show("已複製到剪貼簿", "success");
+                // 視覺回饋
+                this.els.btnCopy.classList.add('copied');
+                this.els.btnCopy.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 已複製`;
+                setTimeout(() => {
+                    this.els.btnCopy.classList.remove('copied');
+                    this.els.btnCopy.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> 複製結果`;
+                }, 2000);
             }).catch(() => Toast.show("複製失敗", "error"));
         },
 
@@ -831,7 +839,10 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `lottery_result_${new Date().getTime()}.txt`;
+            // 優化檔名
+            const now = new Date();
+            const filename = `Lottery_Result_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.txt`;
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
