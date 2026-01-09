@@ -114,7 +114,7 @@
             background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        p.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 6px; letter-spacing: 0.05em; font-weight: 500; }
+        /* 已移除 .subtitle 樣式與元素 */
 
         .card {
             background: var(--bg-card); border-radius: var(--radius); padding: 24px;
@@ -301,7 +301,7 @@
 
 <header>
     <h1>Lottery Pro</h1>
-    <p class="subtitle"></p>
+    <!-- Subtitle removed -->
 </header>
 
 <div class="main-container">
@@ -330,7 +330,7 @@
         </div>
 
         <div class="input-area-wrapper">
-            <textarea id="input-names" placeholder="在此貼上名單（支援 Excel 格式）&#10;一行一個名字，系統將自動過濾行首編號..."></textarea>
+            <textarea id="input-names" placeholder="在此貼上名單（支援 Excel 格式）&#10;一行一個名字..."></textarea>
             
             <!-- Visual Feedback for Names (Chips) -->
             <div id="chips-area" class="chips-container"></div>
@@ -352,13 +352,7 @@
                     </div>
                     <span class="toggle-label">去除重複</span>
                 </label>
-                <label class="toggle-wrapper" title="自動移除行首的 1. 或 A.">
-                    <div class="switch">
-                        <input type="checkbox" id="toggle-clean" checked>
-                        <span class="slider"></span>
-                    </div>
-                    <span class="toggle-label">過濾編號</span>
-                </label>
+                <!-- Removed clean toggle -->
             </div>
             <span id="line-count" style="font-family:'JetBrains Mono'; font-size:0.8rem; color:var(--text-muted)">0 人</span>
         </div>
@@ -410,9 +404,6 @@
 <script>
     // 安全性修正：加入 \u202A-\u202E 以過濾 RTL 攻擊字符
     const INVALID_CHARS_REGEX = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\u202A-\u202E\uFEFF]/g;
-    
-    // 優化：智能去除行首編號 (例如 "1. Name", "A) Name", "• Name")
-    const SMART_CLEAN_REGEX = /^[\d\w]+[\.\)\s\、]+|^[\•\-\+]\s*/;
 
     // --- Custom Modal System (A11y Enhanced) ---
     const Modal = {
@@ -526,7 +517,6 @@
             btnDownload: document.getElementById('btn-download'),
             toggleMemory: document.getElementById('toggle-memory'),
             toggleDedup: document.getElementById('toggle-dedup'),
-            toggleClean: document.getElementById('toggle-clean'), // 新增
             loader: document.getElementById('loading-overlay'),
             loadingText: document.getElementById('loading-text'),
             emptyState: document.getElementById('empty-state'),
@@ -543,7 +533,7 @@
 
             this.els.toggleMemory.checked = loadConfig('lottery_config_memory', false);
             this.els.toggleDedup.checked = loadConfig('lottery_config_dedup', true);
-            this.els.toggleClean.checked = loadConfig('lottery_config_clean', true); // 新增
+            // Removed clean toggle loading
 
             if (this.els.toggleMemory.checked) {
                 const savedNames = localStorage.getItem('lottery_names');
@@ -562,8 +552,8 @@
             const bindToggle = (key, el, msg) => {
                 el.addEventListener('change', (e) => {
                     localStorage.setItem(key, e.target.checked);
-                    // 如果改了去重或過濾，需要立即更新 UI
-                    if (['lottery_config_dedup', 'lottery_config_clean'].includes(key)) {
+                    // 如果改了去重，需要立即更新 UI
+                    if (key === 'lottery_config_dedup') {
                         this.updateData();
                     }
                     if (msg) Toast.show(msg, e.target.checked ? "success" : "default");
@@ -573,7 +563,6 @@
 
             bindToggle('lottery_config_memory', this.els.toggleMemory, "自動記憶功能已變更");
             bindToggle('lottery_config_dedup', this.els.toggleDedup, "去除重複功能已變更");
-            bindToggle('lottery_config_clean', this.els.toggleClean, "自動過濾編號已變更");
         },
 
         trySave() {
@@ -593,11 +582,8 @@
         },
 
         sanitizeInput(text) {
+            // 只保留安全性過濾，移除編號過濾
             let cleanText = text.replace(INVALID_CHARS_REGEX, '').trim();
-            // 優化：智能去除行首編號
-            if (this.els.toggleClean.checked) {
-                cleanText = cleanText.replace(SMART_CLEAN_REGEX, '');
-            }
             return cleanText;
         },
 
