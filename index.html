@@ -65,7 +65,6 @@
         }
         .card-title { font-size: 1.25rem; font-weight: 700; margin: 0; }
 
-        /* 輸入區樣式 */
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         
         .input-group { background: var(--bg-input); padding: 10px 15px; border-radius: 8px; }
@@ -85,10 +84,38 @@
         }
         textarea:focus { border-color: var(--accent); }
 
+        /* --- 開關樣式 (Toggle Switch) --- */
         .status-bar {
             display: flex; justify-content: space-between; align-items: center;
-            margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);
+            margin-top: 12px; font-size: 0.85rem; color: var(--text-muted);
         }
+
+        .toggle-wrapper {
+            display: flex; align-items: center; gap: 8px; cursor: pointer;
+        }
+        
+        .switch {
+            position: relative; display: inline-block; width: 40px; height: 22px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #555; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(18px); }
+        
+        .toggle-label { font-size: 0.85rem; user-select: none; }
+
+
         .btn-text { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; }
         .btn-text:hover { text-decoration: underline; }
 
@@ -102,7 +129,6 @@
         .btn-primary:hover { filter: brightness(1.1); }
         .btn-primary:active { transform: scale(0.98); }
 
-        /* 結果區樣式 */
         .result-container { flex: 1; display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
         
         .result-group {
@@ -110,7 +136,7 @@
             border-radius: 12px;
             padding: 15px;
             display: flex; flex-direction: column;
-            max-height: 45vh; /* 限制高度讓卷軸出現 */
+            max-height: 45vh;
         }
         .result-group.winner { border-left: 4px solid var(--success); }
         .result-group.backup { border-left: 4px solid var(--warning); }
@@ -121,35 +147,23 @@
         }
 
         .list-scroll {
-            overflow-y: auto;
-            padding-right: 5px;
+            overflow-y: auto; padding-right: 5px;
             display: flex; flex-direction: column; gap: 6px;
         }
-        
-        /* 自定義捲軸 */
         .list-scroll::-webkit-scrollbar { width: 6px; }
         .list-scroll::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
 
         .name-tag {
             background: var(--bg-input); padding: 8px 12px; border-radius: 6px;
             font-size: 0.95rem; display: flex; justify-content: space-between;
-            
-            /* 安全性修正：防止長字串撐爆版面 */
-            word-break: break-all;
-            white-space: pre-wrap; /* 保留換行但允許自動折行 */
+            word-break: break-all; white-space: pre-wrap;
         }
-        .index-num { 
-            color: var(--text-muted); 
-            margin-right: 8px; 
-            font-family: 'Roboto Mono', monospace;
-            flex-shrink: 0; /* 防止編號被擠壓 */
-        }
+        .index-num { color: var(--text-muted); margin-right: 8px; font-family: 'Roboto Mono', monospace; flex-shrink: 0; }
 
         .empty-state {
             flex: 1; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            color: var(--text-muted); text-align: center;
-            opacity: 0.7;
+            color: var(--text-muted); text-align: center; opacity: 0.7;
         }
         .empty-icon { font-size: 3rem; margin-bottom: 15px; }
 
@@ -163,7 +177,6 @@
         .btn-action:hover { background: rgba(255,255,255,0.1); }
         .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* RWD 調整 */
         @media (max-width: 768px) {
             .main-container { grid-template-columns: 1fr; }
             .card { min-height: auto; }
@@ -203,8 +216,15 @@
         <textarea id="input-names" placeholder="例如：&#10;王小明&#10;陳小美&#10;..."></textarea>
         
         <div class="status-bar">
+            <!-- 新增：記憶開關 -->
+            <label class="toggle-wrapper" title="開啟後，名單將暫存在瀏覽器中，下次開啟時自動載入">
+                <div class="switch">
+                    <input type="checkbox" id="toggle-memory">
+                    <span class="slider"></span>
+                </div>
+                <span class="toggle-label">自動記憶名單</span>
+            </label>
             <span id="line-count">0 人</span>
-            <span style="font-size: 0.75rem; color: #555;">Auto-saved locally</span>
         </div>
 
         <button class="btn-primary" onclick="app.runLottery()">開始抽選</button>
@@ -220,7 +240,6 @@
         </div>
 
         <div id="result-area" class="result-container">
-            <!-- 預設空狀態 -->
             <div class="empty-state">
                 <div class="empty-icon">🎲</div>
                 <p>準備就緒<br>請輸入名單並點擊開始</p>
@@ -247,23 +266,52 @@
             lineCount: document.getElementById('line-count'),
             resultArea: document.getElementById('result-area'),
             btnCopy: document.getElementById('btn-copy'),
-            btnDownload: document.getElementById('btn-download')
+            btnDownload: document.getElementById('btn-download'),
+            toggleMemory: document.getElementById('toggle-memory') // 綁定開關元素
         },
-        currentResultText: '', // 儲存純文字結果供複製/下載
+        currentResultText: '',
 
         init() {
-            // 防抖監聽：避免大量貼上時卡頓 (Delay 300ms)
+            // 1. 初始化設定：讀取是否開啟記憶 (預設為 false，保護隱私)
+            const isMemoryEnabled = localStorage.getItem('lottery_config_memory') === 'true';
+            this.els.toggleMemory.checked = isMemoryEnabled;
+
+            // 2. 如果開關是開的，才載入上次的名單
+            if (isMemoryEnabled) {
+                const savedNames = localStorage.getItem('lottery_names');
+                if (savedNames) {
+                    this.els.input.value = savedNames;
+                }
+            }
+
+            this.updateCount();
+
+            // 3. 監聽輸入：防抖儲存 (只有在開關開啟時才存)
             this.els.input.addEventListener('input', this.debounce(() => {
                 this.updateCount();
-                // 簡易 localStorage (可選)
-                localStorage.setItem('lottery_names', this.els.input.value);
+                this.trySave();
             }, 300));
 
-            // 恢復上次輸入
-            const saved = localStorage.getItem('lottery_names');
-            if(saved) {
-                this.els.input.value = saved;
-                this.updateCount();
+            // 4. 監聽開關切換事件
+            this.els.toggleMemory.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                // 儲存開關本身的狀態
+                localStorage.setItem('lottery_config_memory', isChecked);
+
+                if (isChecked) {
+                    // 開啟時：立即儲存當前輸入內容
+                    this.trySave();
+                } else {
+                    // 關閉時：立即刪除 localStorage 中的敏感資料
+                    localStorage.removeItem('lottery_names');
+                }
+            });
+        },
+
+        // 嘗試儲存資料的邏輯
+        trySave() {
+            if (this.els.toggleMemory.checked) {
+                localStorage.setItem('lottery_names', this.els.input.value);
             }
         },
 
@@ -275,20 +323,12 @@
             };
         },
 
-        // 安全性修正：HTML 轉義函式，防止 XSS
         escapeHtml(text) {
             if (!text) return text;
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         },
 
-        // 安全性修正：移除可能導致問題的隱形字元 (如 Zero Width Space)
         sanitizeInput(text) {
-             // 移除 C0 控制字元 (除了換行 \n 和 Tab \t) 和隱形字元
             return text.replace(/[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g, '');
         },
 
@@ -299,7 +339,7 @@
 
         getNames() {
             return this.els.input.value.split('\n')
-                .map(line => this.sanitizeInput(line.trim())) // 加入 sanitize
+                .map(line => this.sanitizeInput(line.trim()))
                 .filter(line => line !== '');
         },
 
@@ -307,16 +347,15 @@
             if(confirm('確定要清空所有名單嗎？')) {
                 this.els.input.value = '';
                 this.updateCount();
-                localStorage.removeItem('lottery_names');
+                // 清空時同步更新儲存狀態
+                this.trySave();
             }
         },
 
-        // Fisher-Yates Shuffle with Web Crypto API
         secureShuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const randomBuffer = new Uint32Array(1);
                 window.crypto.getRandomValues(randomBuffer);
-                // 產生 0 到 i 的隨機索引
                 const j = Math.floor((randomBuffer[0] / (0xFFFFFFFF + 1)) * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
@@ -335,7 +374,6 @@
                 if (!confirm(`⚠️ 名單人數 (${names.length}) 少於總需求 (${countMain + countBackup})，是否繼續？`)) return;
             }
 
-            // 執行洗牌
             const shuffled = this.secureShuffle([...names]);
             const winners = shuffled.slice(0, countMain);
             const backups = shuffled.slice(countMain, countMain + countBackup);
@@ -346,8 +384,6 @@
 
         renderResults(winners, backups) {
             let html = '';
-
-            // 渲染列表的 Helper，加入 escapeHtml
             const renderList = (list, type) => {
                 if (list.length === 0) {
                      return `<div style="padding:10px; color:gray; font-style:italic; text-align:center">無人${type === 'backup' ? '備取' : '正取'}</div>`;
@@ -359,7 +395,6 @@
                 `).join('');
             };
 
-            // 正取區塊
             html += `
             <div class="result-group winner">
                 <div class="group-header">
@@ -371,7 +406,6 @@
                 </div>
             </div>`;
 
-            // 備取區塊
             if (backups.length > 0 || parseInt(this.els.countBackup.value) > 0) {
                 html += `
                 <div class="result-group backup">
@@ -391,10 +425,8 @@
         prepareExportData(winners, backups, totalCount) {
             const time = new Date().toLocaleString('zh-TW');
             let text = `=== 抽選結果報告 ===\n時間: ${time}\n總人數: ${totalCount}\n\n`;
-            
             text += `【正取名單】(${winners.length}人)\n`;
             winners.forEach((n, i) => text += `${i+1}. ${n}\n`);
-            
             text += `\n【備取名單】(${backups.length}人)\n`;
             backups.forEach((n, i) => text += `備${i+1}. ${n}\n`);
 
