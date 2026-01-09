@@ -3,26 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottery Pro | 加密安全隨機抽選</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Lottery Pro | Modern UX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-body: #121212;
-            --bg-card: #1E1E1E;
-            --bg-input: #2D2D2D;
-            --text-main: #E0E0E0;
-            --text-muted: #A0A0A0;
-            --accent: #8AB4F8;
-            --success: #81C995;
-            --warning: #FDD663;
-            --danger: #F28B82;
-            --border: #3E3E3E;
+            /* Modern Dark Theme Palette (Zinc/Indigo) */
+            --bg-body: #09090b;
+            --bg-card: #18181b;
+            --bg-input: #27272a;
+            --bg-chip: #3f3f46;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            
+            --accent: #6366f1; /* Indigo 500 */
+            --accent-hover: #4f46e5;
+            --accent-dim: rgba(99, 102, 241, 0.1);
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #27272a;
+            
+            --radius: 12px;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
         }
 
-        * { box-sizing: border-box; outline: none; }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Noto Sans TC', sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
@@ -33,250 +42,342 @@
             align-items: center;
         }
 
-        header { margin: 20px 0 30px; text-align: center; }
-        h1 { margin: 0; font-size: 1.8rem; background: linear-gradient(45deg, #8AB4F8, #C58AF9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        p.subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 5px; }
-
-        .main-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 24px;
-            width: 100%;
-            max-width: 1200px;
+        /* --- Toast Notification System (Replaces Alert) --- */
+        .toast-container {
+            position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+            pointer-events: none; width: 90%; max-width: 400px;
         }
+        .toast {
+            background: rgba(39, 39, 42, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            display: flex; align-items: center; gap: 10px;
+            opacity: 0; transform: translateY(-10px) scale(0.98);
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .toast.out { animation: toastOut 0.2s ease-in forwards; }
+        
+        @keyframes toastIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
+
+        /* --- Layout --- */
+        .main-container {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 24px; width: 100%; max-width: 1200px; margin-top: 20px;
+        }
+
+        header { margin: 20px 0 30px; text-align: center; }
+        h1 { 
+            margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        p.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 6px; letter-spacing: 0.05em; font-weight: 500; }
 
         .card {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
-        }
-        .card-title { font-size: 1.25rem; font-weight: 700; margin: 0; }
-
-        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        
-        .input-group { background: var(--bg-input); padding: 10px 15px; border-radius: 8px; }
-        .input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-        .input-group input { width: 100%; background: transparent; border: none; color: white; font-size: 1.2rem; font-family: 'Roboto Mono', monospace; }
-
-        textarea {
-            width: 100%; height: 300px;
-            background: var(--bg-input);
-            border: 1px solid transparent;
-            border-radius: 8px;
-            color: var(--text-main);
-            padding: 15px;
-            font-size: 1rem;
-            resize: vertical;
+            background: var(--bg-card); border-radius: var(--radius); padding: 24px;
+            border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+            display: flex; flex-direction: column; height: 100%;
             transition: border-color 0.2s;
         }
-        textarea:focus { border-color: var(--accent); }
+        .card:focus-within { border-color: #3f3f46; }
 
-        /* --- 開關樣式 (Toggle Switch) --- */
-        .status-bar {
+        .card-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-top: 12px; font-size: 0.85rem; color: var(--text-muted);
+            margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
         }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 10px; }
+        .card-title svg { color: var(--text-muted); }
 
-        .toggle-wrapper {
-            display: flex; align-items: center; gap: 8px; cursor: pointer;
+        /* --- Inputs --- */
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .input-group { background: var(--bg-input); padding: 10px 12px; border-radius: 8px; border: 1px solid transparent; transition: 0.2s; }
+        .input-group:focus-within { border-color: var(--accent); background: #202022; }
+        .input-group label { display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .input-group input { width: 100%; background: transparent; border: none; color: white; font-size: 1.5rem; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+        /* --- Data Entry Area --- */
+        .input-area-wrapper { position: relative; margin-bottom: 15px; }
+        textarea {
+            width: 100%; height: 180px; background: var(--bg-input);
+            border: 1px solid transparent; border-radius: 8px;
+            color: var(--text-main); padding: 16px; font-size: 0.95rem; line-height: 1.6;
+            resize: vertical; font-family: 'Inter', sans-serif;
+            transition: 0.2s;
         }
-        
-        .switch {
-            position: relative; display: inline-block; width: 40px; height: 22px;
+        textarea:focus { border-color: var(--accent); background: #202022; }
+        textarea::placeholder { color: #52525b; }
+
+        /* --- Chips Preview (New Feature) --- */
+        .chips-container {
+            display: flex; flex-wrap: wrap; gap: 6px; max-height: 0; overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .chips-container.active { max-height: 100px; overflow-y: auto; margin-bottom: 15px; padding-bottom: 4px; }
+        .chip {
+            background: var(--bg-chip); padding: 4px 8px; border-radius: 4px;
+            font-size: 0.75rem; color: var(--text-main); cursor: default;
+            animation: fadeIn 0.2s ease;
+        }
+        .chip-badge { opacity: 0.6; font-size: 0.7rem; }
+
+        /* --- Toggle Switch --- */
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; }
+        .toggle-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        
         .slider {
-            position: absolute; cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #555; transition: .4s; border-radius: 34px;
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #3f3f46; transition: .3s; border-radius: 34px;
         }
         .slider:before {
-            position: absolute; content: "";
-            height: 16px; width: 16px; left: 3px; bottom: 3px;
-            background-color: white; transition: .4s; border-radius: 50%;
+            position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px;
+            background-color: white; transition: .3s; border-radius: 50%;
         }
-        
         input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(18px); }
-        
-        .toggle-label { font-size: 0.85rem; user-select: none; }
+        input:checked + .slider:before { transform: translateX(16px); }
+        .toggle-label { font-size: 0.85rem; color: var(--text-muted); transition: color 0.2s; }
+        input:checked ~ .toggle-label { color: var(--text-main); }
 
-
-        .btn-text { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; }
-        .btn-text:hover { text-decoration: underline; }
-
+        /* --- Buttons --- */
         .btn-primary {
-            width: 100%; margin-top: 20px; padding: 14px;
-            border-radius: 50px; border: none;
-            background: var(--accent); color: #000;
-            font-size: 1.1rem; font-weight: 700;
-            cursor: pointer; transition: filter 0.2s, transform 0.1s;
+            width: 100%; margin-top: 20px; padding: 16px;
+            border-radius: 12px; border: none;
+            background: var(--accent); color: white;
+            font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
         }
-        .btn-primary:hover { filter: brightness(1.1); }
-        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { background: #3f3f46; color: #71717a; cursor: not-allowed; transform: none; }
 
-        .result-container { flex: 1; display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
+        .btn-icon {
+            background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+            padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
+            transition: 0.2s; display: flex; align-items: center; gap: 6px;
+        }
+        .btn-icon:hover { background: rgba(255,255,255,0.05); color: var(--text-main); border-color: #52525b; }
+
+        /* --- Results Area --- */
+        .result-container { flex: 1; display: flex; flex-direction: column; gap: 16px; position: relative; min-height: 300px; }
         
+        /* Loading Overlay (Suspense) */
+        .loading-overlay {
+            position: absolute; inset: 0; background: var(--bg-card); z-index: 10;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .loading-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .spinner {
+            width: 40px; height: 40px; border: 3px solid #3f3f46;
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin-bottom: 20px;
+        }
+        .loading-text { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; }
+
+        /* Result Groups */
         .result-group {
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 15px;
-            display: flex; flex-direction: column;
-            max-height: 45vh;
+            background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
+            opacity: 0; transform: translateY(10px);
         }
-        .result-group.winner { border-left: 4px solid var(--success); }
-        .result-group.backup { border-left: 4px solid var(--warning); }
+        .result-group.show { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        .group-header { padding: 12px 16px; font-size: 0.9rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .winner .group-header { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .backup .group-header { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
 
-        .group-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; font-weight: bold; font-size: 1rem;
-        }
+        .list-scroll { max-height: 250px; overflow-y: auto; padding: 8px; }
+        .list-scroll::-webkit-scrollbar { width: 4px; }
+        .list-scroll::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
 
-        .list-scroll {
-            overflow-y: auto; padding-right: 5px;
-            display: flex; flex-direction: column; gap: 6px;
+        .result-row {
+            display: flex; padding: 8px 12px; border-radius: 4px; 
+            font-size: 0.95rem; align-items: center; gap: 12px;
         }
-        .list-scroll::-webkit-scrollbar { width: 6px; }
-        .list-scroll::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
-
-        .name-tag {
-            background: var(--bg-input); padding: 8px 12px; border-radius: 6px;
-            font-size: 0.95rem; display: flex; justify-content: space-between;
-            word-break: break-all; white-space: pre-wrap;
-        }
-        .index-num { color: var(--text-muted); margin-right: 8px; font-family: 'Roboto Mono', monospace; flex-shrink: 0; }
+        .result-row:hover { background: rgba(255,255,255,0.05); }
+        .index { font-family: 'JetBrains Mono', monospace; color: var(--text-muted); font-size: 0.8rem; width: 24px; text-align: right; }
+        .name { color: var(--text-main); font-weight: 500; }
 
         .empty-state {
-            flex: 1; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            color: var(--text-muted); text-align: center; opacity: 0.7;
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: var(--text-muted); opacity: 0.5;
         }
-        .empty-icon { font-size: 3rem; margin-bottom: 15px; }
 
-        .action-bar { display: flex; gap: 10px; margin-top: auto; padding-top: 15px; }
-        .btn-action {
-            flex: 1; padding: 10px; border-radius: 8px;
-            border: 1px solid var(--border); background: transparent;
-            color: var(--text-main); cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
+        .action-bar { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; 
+            margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); 
         }
-        .btn-action:hover { background: rgba(255,255,255,0.1); }
+        .btn-action {
+            padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input);
+            color: var(--text-main); cursor: pointer; font-size: 0.9rem; font-weight: 500;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-action:hover:not(:disabled) { background: #3f3f46; border-color: #52525b; }
         .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        @media (max-width: 768px) {
-            .main-container { grid-template-columns: 1fr; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) { 
+            .main-container { grid-template-columns: 1fr; } 
             .card { min-height: auto; }
-            .result-group { max-height: 300px; }
+            .chips-container.active { max-height: 80px; }
         }
     </style>
 </head>
 <body>
 
+<div class="toast-container" id="toast-container"></div>
+
 <header>
     <h1>Lottery Pro</h1>
-    <p class="subtitle">Secure Client-Side Randomization</p>
+    <p class="subtitle">SECURE • PRIVATE • MODERN</p>
 </header>
 
 <div class="main-container">
-    <!-- 設定卡片 -->
+    <!-- Setting Section -->
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title">📝 名單與設定</h2>
-            <button class="btn-text" onclick="app.clearInput()">清空</button>
+            <h2 class="card-title">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                名單與設定
+            </h2>
+            <button class="btn-icon" onclick="app.clearInput()">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                清空
+            </button>
         </div>
 
         <div class="settings-grid">
             <div class="input-group">
-                <label>正取 (Main)</label>
+                <label>正取人數</label>
                 <input type="number" id="count-main" value="20" min="1">
             </div>
             <div class="input-group">
-                <label>備取 (Backup)</label>
+                <label>備取人數</label>
                 <input type="number" id="count-backup" value="3" min="0">
             </div>
         </div>
 
-        <label style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px; display:block;">
-            名單輸入 (一行一筆，支援 Excel 貼上)：
-        </label>
-        <textarea id="input-names" placeholder="例如：&#10;王小明&#10;陳小美&#10;..."></textarea>
-        
+        <div class="input-area-wrapper">
+            <textarea id="input-names" placeholder="在此貼上名單（支援 Excel 格式）&#10;一行一個名字..."></textarea>
+            
+            <!-- Visual Feedback for Names (Chips) -->
+            <div id="chips-area" class="chips-container"></div>
+        </div>
+
         <div class="status-bar">
-            <!-- 新增：記憶開關 -->
-            <label class="toggle-wrapper" title="開啟後，名單將暫存在瀏覽器中，下次開啟時自動載入">
+            <label class="toggle-wrapper">
                 <div class="switch">
                     <input type="checkbox" id="toggle-memory">
                     <span class="slider"></span>
                 </div>
                 <span class="toggle-label">自動記憶名單</span>
             </label>
-            <span id="line-count">0 人</span>
+            <span id="line-count" style="font-family:'JetBrains Mono'; font-size:0.8rem; color:var(--text-muted)">0 人</span>
         </div>
 
-        <button class="btn-primary" onclick="app.runLottery()">開始抽選</button>
+        <button class="btn-primary" id="btn-run" onclick="app.runLottery()">
+            開始抽選
+        </button>
     </div>
 
-    <!-- 結果卡片 -->
+    <!-- Result Section -->
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title">📊 抽選結果</h2>
-            <div class="secure-badge" style="font-size:0.75rem; color:var(--success); display:flex; align-items:center; gap:4px;">
-                🔒 Web Crypto API
+            <h2 class="card-title">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                抽選結果
+            </h2>
+            <div style="font-size:0.75rem; color:var(--success); background:rgba(16,185,129,0.1); padding:4px 8px; border-radius:4px; font-weight:500;">
+                🔒 CSPRNG Active
             </div>
         </div>
 
         <div id="result-area" class="result-container">
-            <div class="empty-state">
-                <div class="empty-icon">🎲</div>
-                <p>準備就緒<br>請輸入名單並點擊開始</p>
+            <!-- Loading State -->
+            <div class="loading-overlay" id="loading-overlay">
+                <div class="spinner"></div>
+                <div class="loading-text" id="loading-text">INITIALIZING...</div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="empty-state">
+                <div style="font-size: 3rem; margin-bottom: 10px; filter: grayscale(1);">🎲</div>
+                <p>準備就緒</p>
             </div>
         </div>
 
         <div class="action-bar">
             <button class="btn-action" id="btn-copy" onclick="app.copyResults()" disabled>
-                <span>📋</span> 複製文字
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                複製結果
             </button>
             <button class="btn-action" id="btn-download" onclick="app.downloadResults()" disabled>
-                <span>💾</span> 下載 .txt
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                下載報告
             </button>
         </div>
     </div>
 </div>
 
 <script>
+    // --- Toast Notification System (非阻斷式通知) ---
+    const Toast = {
+        container: document.getElementById('toast-container'),
+        show(message, type = 'default') {
+            const el = document.createElement('div');
+            el.className = 'toast';
+            el.style.borderLeft = `4px solid ${type === 'error' ? 'var(--danger)' : (type === 'success' ? 'var(--success)' : 'var(--accent)')}`;
+            
+            let icon = 'ℹ️';
+            if(type === 'success') icon = '✅';
+            if(type === 'error') icon = '⚠️';
+
+            el.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+            this.container.appendChild(el);
+
+            setTimeout(() => {
+                el.classList.add('out');
+                el.addEventListener('animationend', () => el.remove());
+            }, 3000);
+        }
+    };
+
     const app = {
         els: {
             input: document.getElementById('input-names'),
+            chips: document.getElementById('chips-area'),
             countMain: document.getElementById('count-main'),
             countBackup: document.getElementById('count-backup'),
             lineCount: document.getElementById('line-count'),
             resultArea: document.getElementById('result-area'),
             btnCopy: document.getElementById('btn-copy'),
             btnDownload: document.getElementById('btn-download'),
-            toggleMemory: document.getElementById('toggle-memory') // 綁定開關元素
+            toggleMemory: document.getElementById('toggle-memory'),
+            loader: document.getElementById('loading-overlay'),
+            loadingText: document.getElementById('loading-text'),
+            emptyState: document.getElementById('empty-state'),
+            btnRun: document.getElementById('btn-run')
         },
         currentResultText: '',
 
         init() {
-            // 1. 初始化設定：讀取是否開啟記憶 (預設為 false，保護隱私)
+            // 初始化隱私設定
             const isMemoryEnabled = localStorage.getItem('lottery_config_memory') === 'true';
             this.els.toggleMemory.checked = isMemoryEnabled;
 
-            // 2. 如果開關是開的，才載入上次的名單
             if (isMemoryEnabled) {
                 const savedNames = localStorage.getItem('lottery_names');
                 if (savedNames) {
@@ -284,31 +385,27 @@
                 }
             }
 
-            this.updateCount();
+            this.updateData();
 
-            // 3. 監聽輸入：防抖儲存 (只有在開關開啟時才存)
+            // 事件監聽
             this.els.input.addEventListener('input', this.debounce(() => {
-                this.updateCount();
+                this.updateData();
                 this.trySave();
-            }, 300));
+            }, 200));
 
-            // 4. 監聽開關切換事件
             this.els.toggleMemory.addEventListener('change', (e) => {
                 const isChecked = e.target.checked;
-                // 儲存開關本身的狀態
                 localStorage.setItem('lottery_config_memory', isChecked);
-
                 if (isChecked) {
-                    // 開啟時：立即儲存當前輸入內容
                     this.trySave();
+                    Toast.show("已啟用自動記憶", "success");
                 } else {
-                    // 關閉時：立即刪除 localStorage 中的敏感資料
                     localStorage.removeItem('lottery_names');
+                    Toast.show("已清除記憶資料並關閉功能", "default");
                 }
             });
         },
 
-        // 嘗試儲存資料的邏輯
         trySave() {
             if (this.els.toggleMemory.checked) {
                 localStorage.setItem('lottery_names', this.els.input.value);
@@ -332,9 +429,31 @@
             return text.replace(/[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g, '');
         },
 
-        updateCount() {
-            const count = this.getNames().length;
-            this.els.lineCount.textContent = `${count} 人`;
+        // 更新介面與數據
+        updateData() {
+            const names = this.getNames();
+            this.els.lineCount.textContent = `${names.length} 人`;
+            
+            // 渲染 Chips 預覽 (限制數量以優化效能)
+            const previewLimit = 30;
+            const displayNames = names.slice(0, previewLimit);
+            
+            if (names.length > 0) {
+                this.els.chips.classList.add('active');
+                let chipsHtml = displayNames.map(n => `
+                    <div class="chip">
+                        ${this.escapeHtml(n)}
+                    </div>
+                `).join('');
+
+                if (names.length > previewLimit) {
+                    chipsHtml += `<div class="chip"><span class="chip-badge">+${names.length - previewLimit}</span></div>`;
+                }
+                this.els.chips.innerHTML = chipsHtml;
+            } else {
+                this.els.chips.classList.remove('active');
+                this.els.chips.innerHTML = '';
+            }
         },
 
         getNames() {
@@ -344,14 +463,17 @@
         },
 
         clearInput() {
-            if(confirm('確定要清空所有名單嗎？')) {
-                this.els.input.value = '';
-                this.updateCount();
-                // 清空時同步更新儲存狀態
-                this.trySave();
-            }
+            if(this.els.input.value === '') return;
+            // 只有當名單很多時才確認，提升體驗
+            if(this.getNames().length > 5 && !confirm('確定要清空所有名單嗎？')) return;
+            
+            this.els.input.value = '';
+            this.updateData();
+            this.trySave();
+            Toast.show("名單已清空");
         },
 
+        // 核心安全隨機邏輯
         secureShuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const randomBuffer = new Uint32Array(1);
@@ -367,59 +489,90 @@
             const countMain = parseInt(this.els.countMain.value) || 0;
             const countBackup = parseInt(this.els.countBackup.value) || 0;
 
-            if (names.length === 0) return alert('❌ 請先輸入名單');
-            if (countMain <= 0) return alert('❌ 正取人數必須大於 0');
+            // 非阻斷式驗證
+            if (names.length === 0) return Toast.show("請先輸入名單", "error");
+            if (countMain <= 0) return Toast.show("正取人數必須大於 0", "error");
 
             if (names.length < (countMain + countBackup)) {
-                if (!confirm(`⚠️ 名單人數 (${names.length}) 少於總需求 (${countMain + countBackup})，是否繼續？`)) return;
+                // 這裡保留 confirm 是因為這涉及邏輯決策，不只是通知
+                if(!confirm(`⚠️ 警告：名單人數 (${names.length}) 少於總需求 (${countMain + countBackup})，是否繼續？`)) return;
             }
 
-            const shuffled = this.secureShuffle([...names]);
-            const winners = shuffled.slice(0, countMain);
-            const backups = shuffled.slice(countMain, countMain + countBackup);
+            // UX: 鎖定按鈕 & 顯示過場動畫 (建立信任感)
+            this.els.btnRun.disabled = true;
+            this.els.loader.classList.add('active');
+            
+            // 清理舊結果
+            const existingGroups = this.els.resultArea.querySelectorAll('.result-group');
+            existingGroups.forEach(el => el.remove());
+            if(this.els.emptyState) this.els.emptyState.style.display = 'none';
 
-            this.renderResults(winners, backups);
-            this.prepareExportData(winners, backups, names.length);
+            // 模擬運算過程 (Suspense Phase)
+            let step = 0;
+            const steps = ["INITIALIZING ENTROPY...", "SHUFFLING DATA...", "VERIFYING...", "GENERATING..."];
+            
+            const interval = setInterval(() => {
+                this.els.loadingText.textContent = steps[step % steps.length];
+                step++;
+            }, 200);
+
+            // 800ms 後顯示結果 (心理學最佳延遲)
+            setTimeout(() => {
+                clearInterval(interval);
+                this.els.loader.classList.remove('active');
+                this.els.btnRun.disabled = false;
+                
+                // 執行邏輯
+                const shuffled = this.secureShuffle([...names]);
+                const winners = shuffled.slice(0, countMain);
+                const backups = shuffled.slice(countMain, countMain + countBackup);
+                
+                this.renderResults(winners, backups);
+                this.prepareExportData(winners, backups, names.length);
+                Toast.show("抽選完成", "success");
+
+            }, 800);
         },
 
         renderResults(winners, backups) {
-            let html = '';
-            const renderList = (list, type) => {
-                if (list.length === 0) {
-                     return `<div style="padding:10px; color:gray; font-style:italic; text-align:center">無人${type === 'backup' ? '備取' : '正取'}</div>`;
+            const createGroup = (title, list, type, delay) => {
+                const div = document.createElement('div');
+                div.className = `result-group ${type}`;
+                div.style.animationDelay = `${delay}s`; // 錯開動畫時間
+                
+                let listHtml = '';
+                if(list.length === 0) {
+                     listHtml = `<div style="padding:20px; color:var(--text-muted); text-align:center; font-size:0.9rem;">(無人)</div>`;
+                } else {
+                    listHtml = list.map((n, i) => `
+                        <div class="result-row">
+                            <span class="index">${type === 'backup' ? 'B' : ''}${String(i+1).padStart(2, '0')}</span>
+                            <span class="name">${this.escapeHtml(n)}</span>
+                        </div>
+                    `).join('');
                 }
-                return list.map((n, i) => `
-                    <div class="name-tag">
-                        <span><span class="index-num">${type === 'backup' ? '備' : ''}${i+1}.</span>${this.escapeHtml(n)}</span>
+
+                div.innerHTML = `
+                    <div class="group-header">
+                        <span>${title}</span>
+                        <span>${list.length}</span>
                     </div>
-                `).join('');
+                    <div class="list-scroll">${listHtml}</div>
+                `;
+                return div;
             };
 
-            html += `
-            <div class="result-group winner">
-                <div class="group-header">
-                    <span style="color:var(--success)">🎉 正取名單</span>
-                    <span>${winners.length} 人</span>
-                </div>
-                <div class="list-scroll">
-                    ${renderList(winners, 'main')}
-                </div>
-            </div>`;
+            // 正取名單 (立即顯示)
+            const winnerGroup = createGroup('🎉 正取名單', winners, 'winner', 0);
+            this.els.resultArea.appendChild(winnerGroup);
+            setTimeout(() => winnerGroup.classList.add('show'), 10);
 
+            // 備取名單 (若有設定，稍微延遲顯示)
             if (backups.length > 0 || parseInt(this.els.countBackup.value) > 0) {
-                html += `
-                <div class="result-group backup">
-                    <div class="group-header">
-                        <span style="color:var(--warning)">⚠️ 備取名單</span>
-                        <span>${backups.length} 人</span>
-                    </div>
-                    <div class="list-scroll">
-                        ${renderList(backups, 'backup')}
-                    </div>
-                </div>`;
+                const backupGroup = createGroup('⚠️ 備取名單', backups, 'backup', 0.15);
+                this.els.resultArea.appendChild(backupGroup);
+                setTimeout(() => backupGroup.classList.add('show'), 150);
             }
-
-            this.els.resultArea.innerHTML = html;
         },
 
         prepareExportData(winners, backups, totalCount) {
@@ -438,10 +591,8 @@
         copyResults() {
             if(!this.currentResultText) return;
             navigator.clipboard.writeText(this.currentResultText).then(() => {
-                const originalText = this.els.btnCopy.innerHTML;
-                this.els.btnCopy.innerHTML = '✅ 已複製';
-                setTimeout(() => this.els.btnCopy.innerHTML = originalText, 2000);
-            }).catch(() => alert('複製失敗'));
+                Toast.show("已複製到剪貼簿", "success");
+            }).catch(() => Toast.show("複製失敗", "error"));
         },
 
         downloadResults() {
