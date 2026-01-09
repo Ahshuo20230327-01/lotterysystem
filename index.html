@@ -67,7 +67,7 @@
         @keyframes toastIn { to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
 
-        /* --- Custom Modal System (New) --- */
+        /* --- Custom Modal System --- */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(4px); z-index: 10000;
@@ -154,6 +154,10 @@
             background: var(--bg-chip); padding: 4px 8px; border-radius: 4px;
             font-size: 0.75rem; color: var(--text-main); cursor: default;
             animation: fadeIn 0.2s ease;
+            
+            /* 安全性修正：防止長字串撐爆版面 */
+            word-break: break-all;
+            white-space: normal;
         }
         .chip-badge { opacity: 0.6; font-size: 0.7rem; }
 
@@ -240,7 +244,14 @@
         }
         .result-row:hover { background: rgba(255,255,255,0.05); }
         .index { font-family: 'JetBrains Mono', monospace; color: var(--text-muted); font-size: 0.8rem; width: 24px; text-align: right; }
-        .name { color: var(--text-main); font-weight: 500; }
+        
+        .name { 
+            color: var(--text-main); font-weight: 500;
+            
+            /* 安全性修正：防止長字串撐爆版面 */
+            word-break: break-all;
+            white-space: normal;
+        }
 
         .empty-state {
             position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -388,10 +399,10 @@
 </div>
 
 <script>
-    // 效能優化：將 Regex 編譯移至全域，避免每次執行函數時重複編譯
-    const INVALID_CHARS_REGEX = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g;
+    // 安全性修正：加入 \u202A-\u202E 以過濾 RTL 攻擊字符
+    const INVALID_CHARS_REGEX = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\u202A-\u202E\uFEFF]/g;
 
-    // --- Custom Modal System (取代 confirm) ---
+    // --- Custom Modal System ---
     const Modal = {
         overlay: document.getElementById('modal-overlay'),
         title: document.getElementById('modal-title'),
@@ -434,7 +445,7 @@
             el.className = 'toast';
             el.style.borderLeft = `4px solid ${type === 'error' ? 'var(--danger)' : (type === 'success' ? 'var(--success)' : 'var(--accent)')}`;
             
-            // 安全性：這裡使用 textContent，僅圖示保留 innerHTML (因為是靜態字元)
+            // 安全性：這裡使用 textContent
             const iconSpan = document.createElement('span');
             iconSpan.textContent = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : 'ℹ️');
             
@@ -476,7 +487,7 @@
             const isMemoryEnabled = localStorage.getItem('lottery_config_memory') === 'true';
             this.els.toggleMemory.checked = isMemoryEnabled;
             
-            // Deduplication 設定預設為 true，若無儲存紀錄
+            // Deduplication 設定預設為 true
             const isDedupEnabled = localStorage.getItem('lottery_config_dedup') !== 'false';
             this.els.toggleDedup.checked = isDedupEnabled;
 
@@ -499,7 +510,7 @@
             const handleSettingChange = (key, el, msg) => {
                 el.addEventListener('change', (e) => {
                     localStorage.setItem(key, e.target.checked);
-                    if (key === 'lottery_config_dedup') this.updateData(); // 去重切換需立即更新 UI
+                    if (key === 'lottery_config_dedup') this.updateData();
                     if (msg) Toast.show(msg, e.target.checked ? "success" : "default");
                     this.trySave();
                 });
@@ -529,7 +540,7 @@
             return text.replace(INVALID_CHARS_REGEX, '');
         },
 
-        // 更新介面與數據 (使用 DocumentFragment 與 textContent 優化效能與安全)
+        // 更新介面與數據
         updateData() {
             const names = this.getNames();
             this.els.lineCount.textContent = `${names.length} 人`;
@@ -540,13 +551,12 @@
             if (names.length > 0) {
                 this.els.chips.classList.add('active');
                 
-                // 效能優化：使用 DocumentFragment 避免多次 Reflow
                 const fragment = document.createDocumentFragment();
                 
                 displayNames.forEach(n => {
                     const chip = document.createElement('div');
                     chip.className = 'chip';
-                    chip.textContent = n; // 安全性優化：防止 XSS
+                    chip.textContent = n;
                     fragment.appendChild(chip);
                 });
 
@@ -560,8 +570,7 @@
                     fragment.appendChild(moreChip);
                 }
                 
-                // 一次性更新 DOM
-                this.els.chips.innerHTML = ''; // 清空舊的
+                this.els.chips.innerHTML = '';
                 this.els.chips.appendChild(fragment);
             } else {
                 this.els.chips.classList.remove('active');
@@ -574,7 +583,6 @@
                 .map(line => this.sanitizeInput(line.trim()))
                 .filter(line => line !== '');
             
-            // 邏輯修補：根據設定去除重複
             if (this.els.toggleDedup.checked) {
                 return [...new Set(rawNames)];
             }
@@ -585,7 +593,6 @@
             if(this.els.input.value === '') return;
             
             if(this.getNames().length > 5) {
-                // UX 優化：使用自定義 Modal 取代 confirm
                 Modal.show(
                     "清空確認",
                     "您確定要清空所有名單嗎？此動作無法復原。",
@@ -624,16 +631,13 @@
             if (countMain <= 0) return Toast.show("正取人數必須大於 0", "error");
 
             const executeRun = () => {
-                // UX: 鎖定按鈕 & 顯示過場動畫
                 this.els.btnRun.disabled = true;
                 this.els.loader.classList.add('active');
                 
-                // 清理舊結果
                 const existingGroups = this.els.resultArea.querySelectorAll('.result-group');
                 existingGroups.forEach(el => el.remove());
                 if(this.els.emptyState) this.els.emptyState.style.display = 'none';
 
-                // 模擬運算過程
                 let step = 0;
                 const steps = ["INITIALIZING ENTROPY...", "SHUFFLING DATA...", "VERIFYING...", "GENERATING..."];
                 
@@ -658,7 +662,6 @@
                 }, 800);
             };
 
-            // 邏輯修補與 UX：檢查人數是否足夠
             if (names.length < totalNeed) {
                 Modal.show(
                     "人數不足警告",
@@ -676,7 +679,6 @@
                 groupDiv.className = `result-group ${type}`;
                 groupDiv.style.animationDelay = `${delay}s`;
 
-                // Header
                 const header = document.createElement('div');
                 header.className = 'group-header';
                 
@@ -690,7 +692,6 @@
                 header.appendChild(countSpan);
                 groupDiv.appendChild(header);
 
-                // List Container
                 const listScroll = document.createElement('div');
                 listScroll.className = 'list-scroll';
 
@@ -712,7 +713,7 @@
 
                         const nameSpan = document.createElement('span');
                         nameSpan.className = 'name';
-                        nameSpan.textContent = n; // 安全：textContent
+                        nameSpan.textContent = n; 
 
                         row.appendChild(indexSpan);
                         row.appendChild(nameSpan);
