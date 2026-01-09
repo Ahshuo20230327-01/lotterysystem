@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottery Pro | Modern UX</title>
+    <title>Lottery Pro | Secure & Optimized</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -42,7 +42,7 @@
             align-items: center;
         }
 
-        /* --- Toast Notification System (Replaces Alert) --- */
+        /* --- Toast Notification System --- */
         .toast-container {
             position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
             z-index: 9999; display: flex; flex-direction: column; gap: 8px;
@@ -66,6 +66,35 @@
         
         @keyframes toastIn { to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
+
+        /* --- Custom Modal System (New) --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px); z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 24px; width: 90%; max-width: 400px;
+            box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .modal-overlay.active .modal-card { transform: scale(1); }
+
+        .modal-title { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
+        .modal-body { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
+        
+        .btn-modal {
+            padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; border: none; transition: 0.2s;
+        }
+        .btn-modal.cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+        .btn-modal.cancel:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+        .btn-modal.confirm { background: var(--accent); color: white; }
+        .btn-modal.confirm:hover { background: var(--accent-hover); }
 
         /* --- Layout --- */
         .main-container {
@@ -115,7 +144,7 @@
         textarea:focus { border-color: var(--accent); background: #202022; }
         textarea::placeholder { color: #52525b; }
 
-        /* --- Chips Preview (New Feature) --- */
+        /* --- Chips Preview --- */
         .chips-container {
             display: flex; flex-wrap: wrap; gap: 6px; max-height: 0; overflow: hidden;
             transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -128,22 +157,27 @@
         }
         .chip-badge { opacity: 0.6; font-size: 0.7rem; }
 
-        /* --- Toggle Switch --- */
-        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; }
-        .toggle-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+        /* --- Toggle Switch Row --- */
+        .status-bar-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-top: auto; padding-top: 10px; flex-wrap: wrap; gap: 15px;
+        }
+        .toggles-group { display: flex; gap: 20px; }
+        
+        .toggle-wrapper { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .switch { position: relative; display: inline-block; width: 32px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
             background-color: #3f3f46; transition: .3s; border-radius: 34px;
         }
         .slider:before {
-            position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px;
+            position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
             background-color: white; transition: .3s; border-radius: 50%;
         }
         input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(16px); }
-        .toggle-label { font-size: 0.85rem; color: var(--text-muted); transition: color 0.2s; }
+        input:checked + .slider:before { transform: translateX(14px); }
+        .toggle-label { font-size: 0.8rem; color: var(--text-muted); transition: color 0.2s; font-weight: 500; }
         input:checked ~ .toggle-label { color: var(--text-main); }
 
         /* --- Buttons --- */
@@ -169,7 +203,7 @@
         /* --- Results Area --- */
         .result-container { flex: 1; display: flex; flex-direction: column; gap: 16px; position: relative; min-height: 300px; }
         
-        /* Loading Overlay (Suspense) */
+        /* Loading Overlay */
         .loading-overlay {
             position: absolute; inset: 0; background: var(--bg-card); z-index: 10;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -240,9 +274,21 @@
 
 <div class="toast-container" id="toast-container"></div>
 
+<!-- Modal Structure -->
+<div class="modal-overlay" id="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-title" id="modal-title">提示</div>
+        <div class="modal-body" id="modal-body">內容</div>
+        <div class="modal-actions">
+            <button class="btn-modal cancel" id="modal-btn-cancel">取消</button>
+            <button class="btn-modal confirm" id="modal-btn-confirm">確定</button>
+        </div>
+    </div>
+</div>
+
 <header>
     <h1>Lottery Pro</h1>
-    <p class="subtitle">SECURE • PRIVATE • MODERN</p>
+    <p class="subtitle"></p>
 </header>
 
 <div class="main-container">
@@ -253,7 +299,7 @@
                 <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
                 名單與設定
             </h2>
-            <button class="btn-icon" onclick="app.clearInput()">
+            <button class="btn-icon" onclick="app.requestClearInput()">
                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 清空
             </button>
@@ -277,14 +323,23 @@
             <div id="chips-area" class="chips-container"></div>
         </div>
 
-        <div class="status-bar">
-            <label class="toggle-wrapper">
-                <div class="switch">
-                    <input type="checkbox" id="toggle-memory">
-                    <span class="slider"></span>
-                </div>
-                <span class="toggle-label">自動記憶名單</span>
-            </label>
+        <div class="status-bar-row">
+            <div class="toggles-group">
+                <label class="toggle-wrapper">
+                    <div class="switch">
+                        <input type="checkbox" id="toggle-memory">
+                        <span class="slider"></span>
+                    </div>
+                    <span class="toggle-label">記憶名單</span>
+                </label>
+                <label class="toggle-wrapper">
+                    <div class="switch">
+                        <input type="checkbox" id="toggle-dedup" checked>
+                        <span class="slider"></span>
+                    </div>
+                    <span class="toggle-label">去除重複</span>
+                </label>
+            </div>
             <span id="line-count" style="font-family:'JetBrains Mono'; font-size:0.8rem; color:var(--text-muted)">0 人</span>
         </div>
 
@@ -333,7 +388,45 @@
 </div>
 
 <script>
-    // --- Toast Notification System (非阻斷式通知) ---
+    // 效能優化：將 Regex 編譯移至全域，避免每次執行函數時重複編譯
+    const INVALID_CHARS_REGEX = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g;
+
+    // --- Custom Modal System (取代 confirm) ---
+    const Modal = {
+        overlay: document.getElementById('modal-overlay'),
+        title: document.getElementById('modal-title'),
+        body: document.getElementById('modal-body'),
+        btnConfirm: document.getElementById('modal-btn-confirm'),
+        btnCancel: document.getElementById('modal-btn-cancel'),
+        currentConfirmCallback: null,
+
+        init() {
+            this.btnCancel.onclick = () => this.hide();
+            this.btnConfirm.onclick = () => {
+                if (this.currentConfirmCallback) this.currentConfirmCallback();
+                this.hide();
+            };
+            // 點擊背景關閉
+            this.overlay.onclick = (e) => {
+                if(e.target === this.overlay) this.hide();
+            };
+        },
+
+        show(title, text, onConfirm) {
+            this.title.textContent = title;
+            this.body.textContent = text;
+            this.currentConfirmCallback = onConfirm;
+            this.overlay.classList.add('active');
+        },
+
+        hide() {
+            this.overlay.classList.remove('active');
+            this.currentConfirmCallback = null;
+        }
+    };
+    Modal.init();
+
+    // --- Toast Notification System ---
     const Toast = {
         container: document.getElementById('toast-container'),
         show(message, type = 'default') {
@@ -341,11 +434,15 @@
             el.className = 'toast';
             el.style.borderLeft = `4px solid ${type === 'error' ? 'var(--danger)' : (type === 'success' ? 'var(--success)' : 'var(--accent)')}`;
             
-            let icon = 'ℹ️';
-            if(type === 'success') icon = '✅';
-            if(type === 'error') icon = '⚠️';
+            // 安全性：這裡使用 textContent，僅圖示保留 innerHTML (因為是靜態字元)
+            const iconSpan = document.createElement('span');
+            iconSpan.textContent = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : 'ℹ️');
+            
+            const msgSpan = document.createElement('span');
+            msgSpan.textContent = message;
 
-            el.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+            el.appendChild(iconSpan);
+            el.appendChild(msgSpan);
             this.container.appendChild(el);
 
             setTimeout(() => {
@@ -366,6 +463,7 @@
             btnCopy: document.getElementById('btn-copy'),
             btnDownload: document.getElementById('btn-download'),
             toggleMemory: document.getElementById('toggle-memory'),
+            toggleDedup: document.getElementById('toggle-dedup'),
             loader: document.getElementById('loading-overlay'),
             loadingText: document.getElementById('loading-text'),
             emptyState: document.getElementById('empty-state'),
@@ -374,9 +472,13 @@
         currentResultText: '',
 
         init() {
-            // 初始化隱私設定
+            // 初始化隱私與邏輯設定
             const isMemoryEnabled = localStorage.getItem('lottery_config_memory') === 'true';
             this.els.toggleMemory.checked = isMemoryEnabled;
+            
+            // Deduplication 設定預設為 true，若無儲存紀錄
+            const isDedupEnabled = localStorage.getItem('lottery_config_dedup') !== 'false';
+            this.els.toggleDedup.checked = isDedupEnabled;
 
             if (isMemoryEnabled) {
                 const savedNames = localStorage.getItem('lottery_names');
@@ -393,22 +495,25 @@
                 this.trySave();
             }, 200));
 
-            this.els.toggleMemory.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                localStorage.setItem('lottery_config_memory', isChecked);
-                if (isChecked) {
+            // 設定監聽
+            const handleSettingChange = (key, el, msg) => {
+                el.addEventListener('change', (e) => {
+                    localStorage.setItem(key, e.target.checked);
+                    if (key === 'lottery_config_dedup') this.updateData(); // 去重切換需立即更新 UI
+                    if (msg) Toast.show(msg, e.target.checked ? "success" : "default");
                     this.trySave();
-                    Toast.show("已啟用自動記憶", "success");
-                } else {
-                    localStorage.removeItem('lottery_names');
-                    Toast.show("已清除記憶資料並關閉功能", "default");
-                }
-            });
+                });
+            };
+
+            handleSettingChange('lottery_config_memory', this.els.toggleMemory, "自動記憶功能已變更");
+            handleSettingChange('lottery_config_dedup', this.els.toggleDedup, "去除重複功能已變更");
         },
 
         trySave() {
             if (this.els.toggleMemory.checked) {
                 localStorage.setItem('lottery_names', this.els.input.value);
+            } else {
+                localStorage.removeItem('lottery_names');
             }
         },
 
@@ -420,53 +525,78 @@
             };
         },
 
-        escapeHtml(text) {
-            if (!text) return text;
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        },
-
         sanitizeInput(text) {
-            return text.replace(/[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g, '');
+            return text.replace(INVALID_CHARS_REGEX, '');
         },
 
-        // 更新介面與數據
+        // 更新介面與數據 (使用 DocumentFragment 與 textContent 優化效能與安全)
         updateData() {
             const names = this.getNames();
             this.els.lineCount.textContent = `${names.length} 人`;
             
-            // 渲染 Chips 預覽 (限制數量以優化效能)
             const previewLimit = 30;
             const displayNames = names.slice(0, previewLimit);
             
             if (names.length > 0) {
                 this.els.chips.classList.add('active');
-                let chipsHtml = displayNames.map(n => `
-                    <div class="chip">
-                        ${this.escapeHtml(n)}
-                    </div>
-                `).join('');
+                
+                // 效能優化：使用 DocumentFragment 避免多次 Reflow
+                const fragment = document.createDocumentFragment();
+                
+                displayNames.forEach(n => {
+                    const chip = document.createElement('div');
+                    chip.className = 'chip';
+                    chip.textContent = n; // 安全性優化：防止 XSS
+                    fragment.appendChild(chip);
+                });
 
                 if (names.length > previewLimit) {
-                    chipsHtml += `<div class="chip"><span class="chip-badge">+${names.length - previewLimit}</span></div>`;
+                    const moreChip = document.createElement('div');
+                    moreChip.className = 'chip';
+                    const badge = document.createElement('span');
+                    badge.className = 'chip-badge';
+                    badge.textContent = `+${names.length - previewLimit}`;
+                    moreChip.appendChild(badge);
+                    fragment.appendChild(moreChip);
                 }
-                this.els.chips.innerHTML = chipsHtml;
+                
+                // 一次性更新 DOM
+                this.els.chips.innerHTML = ''; // 清空舊的
+                this.els.chips.appendChild(fragment);
             } else {
                 this.els.chips.classList.remove('active');
-                this.els.chips.innerHTML = '';
+                this.els.chips.textContent = '';
             }
         },
 
         getNames() {
-            return this.els.input.value.split('\n')
+            const rawNames = this.els.input.value.split('\n')
                 .map(line => this.sanitizeInput(line.trim()))
                 .filter(line => line !== '');
+            
+            // 邏輯修補：根據設定去除重複
+            if (this.els.toggleDedup.checked) {
+                return [...new Set(rawNames)];
+            }
+            return rawNames;
         },
 
-        clearInput() {
+        requestClearInput() {
             if(this.els.input.value === '') return;
-            // 只有當名單很多時才確認，提升體驗
-            if(this.getNames().length > 5 && !confirm('確定要清空所有名單嗎？')) return;
             
+            if(this.getNames().length > 5) {
+                // UX 優化：使用自定義 Modal 取代 confirm
+                Modal.show(
+                    "清空確認",
+                    "您確定要清空所有名單嗎？此動作無法復原。",
+                    () => this.performClear()
+                );
+            } else {
+                this.performClear();
+            }
+        },
+
+        performClear() {
             this.els.input.value = '';
             this.updateData();
             this.trySave();
@@ -488,86 +618,117 @@
             const names = this.getNames();
             const countMain = parseInt(this.els.countMain.value) || 0;
             const countBackup = parseInt(this.els.countBackup.value) || 0;
+            const totalNeed = countMain + countBackup;
 
-            // 非阻斷式驗證
             if (names.length === 0) return Toast.show("請先輸入名單", "error");
             if (countMain <= 0) return Toast.show("正取人數必須大於 0", "error");
 
-            if (names.length < (countMain + countBackup)) {
-                // 這裡保留 confirm 是因為這涉及邏輯決策，不只是通知
-                if(!confirm(`⚠️ 警告：名單人數 (${names.length}) 少於總需求 (${countMain + countBackup})，是否繼續？`)) return;
+            const executeRun = () => {
+                // UX: 鎖定按鈕 & 顯示過場動畫
+                this.els.btnRun.disabled = true;
+                this.els.loader.classList.add('active');
+                
+                // 清理舊結果
+                const existingGroups = this.els.resultArea.querySelectorAll('.result-group');
+                existingGroups.forEach(el => el.remove());
+                if(this.els.emptyState) this.els.emptyState.style.display = 'none';
+
+                // 模擬運算過程
+                let step = 0;
+                const steps = ["INITIALIZING ENTROPY...", "SHUFFLING DATA...", "VERIFYING...", "GENERATING..."];
+                
+                const interval = setInterval(() => {
+                    this.els.loadingText.textContent = steps[step % steps.length];
+                    step++;
+                }, 200);
+
+                setTimeout(() => {
+                    clearInterval(interval);
+                    this.els.loader.classList.remove('active');
+                    this.els.btnRun.disabled = false;
+                    
+                    const shuffled = this.secureShuffle([...names]);
+                    const winners = shuffled.slice(0, countMain);
+                    const backups = shuffled.slice(countMain, countMain + countBackup);
+                    
+                    this.renderResults(winners, backups);
+                    this.prepareExportData(winners, backups, names.length);
+                    Toast.show("抽選完成", "success");
+
+                }, 800);
+            };
+
+            // 邏輯修補與 UX：檢查人數是否足夠
+            if (names.length < totalNeed) {
+                Modal.show(
+                    "人數不足警告",
+                    `名單人數 (${names.length}) 少於總需求 (${totalNeed})。是否仍要繼續執行？`,
+                    () => executeRun()
+                );
+            } else {
+                executeRun();
             }
-
-            // UX: 鎖定按鈕 & 顯示過場動畫 (建立信任感)
-            this.els.btnRun.disabled = true;
-            this.els.loader.classList.add('active');
-            
-            // 清理舊結果
-            const existingGroups = this.els.resultArea.querySelectorAll('.result-group');
-            existingGroups.forEach(el => el.remove());
-            if(this.els.emptyState) this.els.emptyState.style.display = 'none';
-
-            // 模擬運算過程 (Suspense Phase)
-            let step = 0;
-            const steps = ["INITIALIZING ENTROPY...", "SHUFFLING DATA...", "VERIFYING...", "GENERATING..."];
-            
-            const interval = setInterval(() => {
-                this.els.loadingText.textContent = steps[step % steps.length];
-                step++;
-            }, 200);
-
-            // 800ms 後顯示結果 (心理學最佳延遲)
-            setTimeout(() => {
-                clearInterval(interval);
-                this.els.loader.classList.remove('active');
-                this.els.btnRun.disabled = false;
-                
-                // 執行邏輯
-                const shuffled = this.secureShuffle([...names]);
-                const winners = shuffled.slice(0, countMain);
-                const backups = shuffled.slice(countMain, countMain + countBackup);
-                
-                this.renderResults(winners, backups);
-                this.prepareExportData(winners, backups, names.length);
-                Toast.show("抽選完成", "success");
-
-            }, 800);
         },
 
         renderResults(winners, backups) {
-            const createGroup = (title, list, type, delay) => {
-                const div = document.createElement('div');
-                div.className = `result-group ${type}`;
-                div.style.animationDelay = `${delay}s`; // 錯開動畫時間
+            const createGroup = (titleText, list, type, delay) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = `result-group ${type}`;
+                groupDiv.style.animationDelay = `${delay}s`;
+
+                // Header
+                const header = document.createElement('div');
+                header.className = 'group-header';
                 
-                let listHtml = '';
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = titleText;
+                
+                const countSpan = document.createElement('span');
+                countSpan.textContent = list.length;
+
+                header.appendChild(titleSpan);
+                header.appendChild(countSpan);
+                groupDiv.appendChild(header);
+
+                // List Container
+                const listScroll = document.createElement('div');
+                listScroll.className = 'list-scroll';
+
                 if(list.length === 0) {
-                     listHtml = `<div style="padding:20px; color:var(--text-muted); text-align:center; font-size:0.9rem;">(無人)</div>`;
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.style.cssText = "padding:20px; color:var(--text-muted); text-align:center; font-size:0.9rem;";
+                    emptyMsg.textContent = "(無人)";
+                    listScroll.appendChild(emptyMsg);
                 } else {
-                    listHtml = list.map((n, i) => `
-                        <div class="result-row">
-                            <span class="index">${type === 'backup' ? 'B' : ''}${String(i+1).padStart(2, '0')}</span>
-                            <span class="name">${this.escapeHtml(n)}</span>
-                        </div>
-                    `).join('');
+                    const fragment = document.createDocumentFragment();
+                    list.forEach((n, i) => {
+                        const row = document.createElement('div');
+                        row.className = 'result-row';
+
+                        const indexSpan = document.createElement('span');
+                        indexSpan.className = 'index';
+                        const prefix = type === 'backup' ? 'B' : '';
+                        indexSpan.textContent = `${prefix}${String(i+1).padStart(2, '0')}`;
+
+                        const nameSpan = document.createElement('span');
+                        nameSpan.className = 'name';
+                        nameSpan.textContent = n; // 安全：textContent
+
+                        row.appendChild(indexSpan);
+                        row.appendChild(nameSpan);
+                        fragment.appendChild(row);
+                    });
+                    listScroll.appendChild(fragment);
                 }
 
-                div.innerHTML = `
-                    <div class="group-header">
-                        <span>${title}</span>
-                        <span>${list.length}</span>
-                    </div>
-                    <div class="list-scroll">${listHtml}</div>
-                `;
-                return div;
+                groupDiv.appendChild(listScroll);
+                return groupDiv;
             };
 
-            // 正取名單 (立即顯示)
             const winnerGroup = createGroup('🎉 正取名單', winners, 'winner', 0);
             this.els.resultArea.appendChild(winnerGroup);
             setTimeout(() => winnerGroup.classList.add('show'), 10);
 
-            // 備取名單 (若有設定，稍微延遲顯示)
             if (backups.length > 0 || parseInt(this.els.countBackup.value) > 0) {
                 const backupGroup = createGroup('⚠️ 備取名單', backups, 'backup', 0.15);
                 this.els.resultArea.appendChild(backupGroup);
