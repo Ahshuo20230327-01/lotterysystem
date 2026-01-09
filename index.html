@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottery Pro | Secure & Optimized</title>
+    <title>Lottery Pro | Professional Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -42,6 +42,12 @@
             align-items: center;
         }
 
+        /* Focus Visibility for Accessibility */
+        *:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
         /* --- Toast Notification System --- */
         .toast-container {
             position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
@@ -67,7 +73,7 @@
         @keyframes toastIn { to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
 
-        /* --- Custom Modal System --- */
+        /* --- Custom Modal System (A11y Enhanced) --- */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(4px); z-index: 10000;
@@ -154,8 +160,6 @@
             background: var(--bg-chip); padding: 4px 8px; border-radius: 4px;
             font-size: 0.75rem; color: var(--text-main); cursor: default;
             animation: fadeIn 0.2s ease;
-            
-            /* 安全性修正：防止長字串撐爆版面 */
             word-break: break-all;
             white-space: normal;
         }
@@ -166,9 +170,9 @@
             display: flex; justify-content: space-between; align-items: center; 
             margin-top: auto; padding-top: 10px; flex-wrap: wrap; gap: 15px;
         }
-        .toggles-group { display: flex; gap: 20px; }
+        .toggles-group { display: flex; gap: 20px; flex-wrap: wrap; }
         
-        .toggle-wrapper { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .toggle-wrapper { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
         .switch { position: relative; display: inline-block; width: 32px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
@@ -247,8 +251,6 @@
         
         .name { 
             color: var(--text-main); font-weight: 500;
-            
-            /* 安全性修正：防止長字串撐爆版面 */
             word-break: break-all;
             white-space: normal;
         }
@@ -286,7 +288,7 @@
 <div class="toast-container" id="toast-container"></div>
 
 <!-- Modal Structure -->
-<div class="modal-overlay" id="modal-overlay">
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-card">
         <div class="modal-title" id="modal-title">提示</div>
         <div class="modal-body" id="modal-body">內容</div>
@@ -328,7 +330,7 @@
         </div>
 
         <div class="input-area-wrapper">
-            <textarea id="input-names" placeholder="在此貼上名單（支援 Excel 格式）&#10;一行一個名字..."></textarea>
+            <textarea id="input-names" placeholder="在此貼上名單（支援 Excel 格式）&#10;一行一個名字，系統將自動過濾行首編號..."></textarea>
             
             <!-- Visual Feedback for Names (Chips) -->
             <div id="chips-area" class="chips-container"></div>
@@ -336,19 +338,26 @@
 
         <div class="status-bar-row">
             <div class="toggles-group">
-                <label class="toggle-wrapper">
+                <label class="toggle-wrapper" title="自動儲存輸入內容">
                     <div class="switch">
                         <input type="checkbox" id="toggle-memory">
                         <span class="slider"></span>
                     </div>
                     <span class="toggle-label">記憶名單</span>
                 </label>
-                <label class="toggle-wrapper">
+                <label class="toggle-wrapper" title="移除相同的名字">
                     <div class="switch">
                         <input type="checkbox" id="toggle-dedup" checked>
                         <span class="slider"></span>
                     </div>
                     <span class="toggle-label">去除重複</span>
+                </label>
+                <label class="toggle-wrapper" title="自動移除行首的 1. 或 A.">
+                    <div class="switch">
+                        <input type="checkbox" id="toggle-clean" checked>
+                        <span class="slider"></span>
+                    </div>
+                    <span class="toggle-label">過濾編號</span>
                 </label>
             </div>
             <span id="line-count" style="font-family:'JetBrains Mono'; font-size:0.8rem; color:var(--text-muted)">0 人</span>
@@ -401,8 +410,11 @@
 <script>
     // 安全性修正：加入 \u202A-\u202E 以過濾 RTL 攻擊字符
     const INVALID_CHARS_REGEX = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\u202A-\u202E\uFEFF]/g;
+    
+    // 優化：智能去除行首編號 (例如 "1. Name", "A) Name", "• Name")
+    const SMART_CLEAN_REGEX = /^[\d\w]+[\.\)\s\、]+|^[\•\-\+]\s*/;
 
-    // --- Custom Modal System ---
+    // --- Custom Modal System (A11y Enhanced) ---
     const Modal = {
         overlay: document.getElementById('modal-overlay'),
         title: document.getElementById('modal-title'),
@@ -410,29 +422,68 @@
         btnConfirm: document.getElementById('modal-btn-confirm'),
         btnCancel: document.getElementById('modal-btn-cancel'),
         currentConfirmCallback: null,
+        lastFocusedElement: null,
 
         init() {
+            // 點擊事件
             this.btnCancel.onclick = () => this.hide();
             this.btnConfirm.onclick = () => {
                 if (this.currentConfirmCallback) this.currentConfirmCallback();
                 this.hide();
             };
-            // 點擊背景關閉
             this.overlay.onclick = (e) => {
                 if(e.target === this.overlay) this.hide();
             };
+
+            // 鍵盤無障礙支援 (Focus Trap & Shortcuts)
+            document.addEventListener('keydown', (e) => {
+                if (!this.overlay.classList.contains('active')) return;
+
+                if (e.key === 'Escape') this.hide();
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // 防止觸發背景按鈕
+                    this.btnConfirm.click();
+                }
+                if (e.key === 'Tab') {
+                    // 簡單的 Focus Trap: 這裡只有兩個按鈕，循環鎖定
+                    const focusable = [this.btnCancel, this.btnConfirm];
+                    const first = focusable[0];
+                    const last = focusable[focusable.length - 1];
+
+                    if (e.shiftKey) { // Shift + Tab
+                        if (document.activeElement === first) {
+                            e.preventDefault();
+                            last.focus();
+                        }
+                    } else { // Tab
+                        if (document.activeElement === last) {
+                            e.preventDefault();
+                            first.focus();
+                        }
+                    }
+                }
+            });
         },
 
         show(title, text, onConfirm) {
+            this.lastFocusedElement = document.activeElement; // 記住開啟前的位置
             this.title.textContent = title;
             this.body.textContent = text;
             this.currentConfirmCallback = onConfirm;
             this.overlay.classList.add('active');
+            
+            // 將焦點移至「確認」按鈕，方便鍵盤使用者
+            setTimeout(() => this.btnConfirm.focus(), 50);
         },
 
         hide() {
             this.overlay.classList.remove('active');
             this.currentConfirmCallback = null;
+            // 歸還焦點
+            if (this.lastFocusedElement) {
+                this.lastFocusedElement.focus();
+                this.lastFocusedElement = null;
+            }
         }
     };
     Modal.init();
@@ -445,7 +496,6 @@
             el.className = 'toast';
             el.style.borderLeft = `4px solid ${type === 'error' ? 'var(--danger)' : (type === 'success' ? 'var(--success)' : 'var(--accent)')}`;
             
-            // 安全性：這裡使用 textContent
             const iconSpan = document.createElement('span');
             iconSpan.textContent = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : 'ℹ️');
             
@@ -456,6 +506,7 @@
             el.appendChild(msgSpan);
             this.container.appendChild(el);
 
+            // 3秒後移除
             setTimeout(() => {
                 el.classList.add('out');
                 el.addEventListener('animationend', () => el.remove());
@@ -475,6 +526,7 @@
             btnDownload: document.getElementById('btn-download'),
             toggleMemory: document.getElementById('toggle-memory'),
             toggleDedup: document.getElementById('toggle-dedup'),
+            toggleClean: document.getElementById('toggle-clean'), // 新增
             loader: document.getElementById('loading-overlay'),
             loadingText: document.getElementById('loading-text'),
             emptyState: document.getElementById('empty-state'),
@@ -483,41 +535,45 @@
         currentResultText: '',
 
         init() {
-            // 初始化隱私與邏輯設定
-            const isMemoryEnabled = localStorage.getItem('lottery_config_memory') === 'true';
-            this.els.toggleMemory.checked = isMemoryEnabled;
-            
-            // Deduplication 設定預設為 true
-            const isDedupEnabled = localStorage.getItem('lottery_config_dedup') !== 'false';
-            this.els.toggleDedup.checked = isDedupEnabled;
+            // 從 LocalStorage 載入設定
+            const loadConfig = (key, defaultVal) => {
+                const val = localStorage.getItem(key);
+                return val === null ? defaultVal : val === 'true';
+            };
 
-            if (isMemoryEnabled) {
+            this.els.toggleMemory.checked = loadConfig('lottery_config_memory', false);
+            this.els.toggleDedup.checked = loadConfig('lottery_config_dedup', true);
+            this.els.toggleClean.checked = loadConfig('lottery_config_clean', true); // 新增
+
+            if (this.els.toggleMemory.checked) {
                 const savedNames = localStorage.getItem('lottery_names');
-                if (savedNames) {
-                    this.els.input.value = savedNames;
-                }
+                if (savedNames) this.els.input.value = savedNames;
             }
 
             this.updateData();
 
-            // 事件監聽
+            // 輸入監聽
             this.els.input.addEventListener('input', this.debounce(() => {
                 this.updateData();
                 this.trySave();
             }, 200));
 
             // 設定監聽
-            const handleSettingChange = (key, el, msg) => {
+            const bindToggle = (key, el, msg) => {
                 el.addEventListener('change', (e) => {
                     localStorage.setItem(key, e.target.checked);
-                    if (key === 'lottery_config_dedup') this.updateData();
+                    // 如果改了去重或過濾，需要立即更新 UI
+                    if (['lottery_config_dedup', 'lottery_config_clean'].includes(key)) {
+                        this.updateData();
+                    }
                     if (msg) Toast.show(msg, e.target.checked ? "success" : "default");
                     this.trySave();
                 });
             };
 
-            handleSettingChange('lottery_config_memory', this.els.toggleMemory, "自動記憶功能已變更");
-            handleSettingChange('lottery_config_dedup', this.els.toggleDedup, "去除重複功能已變更");
+            bindToggle('lottery_config_memory', this.els.toggleMemory, "自動記憶功能已變更");
+            bindToggle('lottery_config_dedup', this.els.toggleDedup, "去除重複功能已變更");
+            bindToggle('lottery_config_clean', this.els.toggleClean, "自動過濾編號已變更");
         },
 
         trySave() {
@@ -537,7 +593,12 @@
         },
 
         sanitizeInput(text) {
-            return text.replace(INVALID_CHARS_REGEX, '');
+            let cleanText = text.replace(INVALID_CHARS_REGEX, '').trim();
+            // 優化：智能去除行首編號
+            if (this.els.toggleClean.checked) {
+                cleanText = cleanText.replace(SMART_CLEAN_REGEX, '');
+            }
+            return cleanText;
         },
 
         // 更新介面與數據
@@ -550,7 +611,6 @@
             
             if (names.length > 0) {
                 this.els.chips.classList.add('active');
-                
                 const fragment = document.createDocumentFragment();
                 
                 displayNames.forEach(n => {
@@ -580,7 +640,7 @@
 
         getNames() {
             const rawNames = this.els.input.value.split('\n')
-                .map(line => this.sanitizeInput(line.trim()))
+                .map(line => this.sanitizeInput(line))
                 .filter(line => line !== '');
             
             if (this.els.toggleDedup.checked) {
@@ -595,7 +655,7 @@
             if(this.getNames().length > 5) {
                 Modal.show(
                     "清空確認",
-                    "您確定要清空所有名單嗎？此動作無法復原。",
+                    "您確定要清空所有名單嗎？",
                     () => this.performClear()
                 );
             } else {
@@ -634,7 +694,8 @@
                 this.els.btnRun.disabled = true;
                 this.els.loader.classList.add('active');
                 
-                const existingGroups = this.els.resultArea.querySelectorAll('.result-group');
+                // 清理 UI
+                const existingGroups = this.els.resultArea.querySelectorAll('.result-group, .overflow-msg');
                 existingGroups.forEach(el => el.remove());
                 if(this.els.emptyState) this.els.emptyState.style.display = 'none';
 
@@ -674,6 +735,8 @@
         },
 
         renderResults(winners, backups) {
+            const MAX_RENDER = 100; // 渲染保護上限
+
             const createGroup = (titleText, list, type, delay) => {
                 const groupDiv = document.createElement('div');
                 groupDiv.className = `result-group ${type}`;
@@ -686,7 +749,7 @@
                 titleSpan.textContent = titleText;
                 
                 const countSpan = document.createElement('span');
-                countSpan.textContent = list.length;
+                countSpan.textContent = list.length > 0 ? list.length : '無';
 
                 header.appendChild(titleSpan);
                 header.appendChild(countSpan);
@@ -698,11 +761,15 @@
                 if(list.length === 0) {
                     const emptyMsg = document.createElement('div');
                     emptyMsg.style.cssText = "padding:20px; color:var(--text-muted); text-align:center; font-size:0.9rem;";
-                    emptyMsg.textContent = "(無人)";
+                    // UI 優化：顯示更明確的訊息
+                    emptyMsg.textContent = type === 'backup' ? "(名單已耗盡，無備取)" : "(無)";
                     listScroll.appendChild(emptyMsg);
                 } else {
                     const fragment = document.createDocumentFragment();
-                    list.forEach((n, i) => {
+                    // 渲染保護邏輯
+                    const renderList = list.slice(0, MAX_RENDER);
+                    
+                    renderList.forEach((n, i) => {
                         const row = document.createElement('div');
                         row.className = 'result-row';
 
@@ -719,6 +786,14 @@
                         row.appendChild(nameSpan);
                         fragment.appendChild(row);
                     });
+                    
+                    if (list.length > MAX_RENDER) {
+                        const moreDiv = document.createElement('div');
+                        moreDiv.style.cssText = "padding:10px; text-align:center; color:var(--text-muted); font-size:0.8rem; border-top:1px solid var(--border);";
+                        moreDiv.textContent = `...還有 ${list.length - MAX_RENDER} 人 (請下載完整名單)`;
+                        fragment.appendChild(moreDiv);
+                    }
+                    
                     listScroll.appendChild(fragment);
                 }
 
@@ -730,7 +805,9 @@
             this.els.resultArea.appendChild(winnerGroup);
             setTimeout(() => winnerGroup.classList.add('show'), 10);
 
-            if (backups.length > 0 || parseInt(this.els.countBackup.value) > 0) {
+            // 只有在真的有設定備取需求，或者真的有備取人選時才顯示
+            const needBackup = parseInt(this.els.countBackup.value) > 0;
+            if (backups.length > 0 || needBackup) {
                 const backupGroup = createGroup('⚠️ 備取名單', backups, 'backup', 0.15);
                 this.els.resultArea.appendChild(backupGroup);
                 setTimeout(() => backupGroup.classList.add('show'), 150);
@@ -742,8 +819,13 @@
             let text = `=== 抽選結果報告 ===\n時間: ${time}\n總人數: ${totalCount}\n\n`;
             text += `【正取名單】(${winners.length}人)\n`;
             winners.forEach((n, i) => text += `${i+1}. ${n}\n`);
-            text += `\n【備取名單】(${backups.length}人)\n`;
-            backups.forEach((n, i) => text += `備${i+1}. ${n}\n`);
+            
+            if (backups.length > 0) {
+                text += `\n【備取名單】(${backups.length}人)\n`;
+                backups.forEach((n, i) => text += `備${i+1}. ${n}\n`);
+            } else {
+                 text += `\n【備取名單】(0人)\n(名單已耗盡)\n`;
+            }
 
             this.currentResultText = text;
             this.els.btnCopy.disabled = false;
