@@ -73,7 +73,7 @@
             border: 1px solid var(--color-border);
             box-shadow: var(--shadow-lg);
             display: flex; flex-direction: column; height: 100%;
-            position: relative; /* For absolute positioning context */
+            position: relative;
         }
 
         .card-header {
@@ -166,21 +166,22 @@
         .result-container { 
             flex: 1; display: flex; flex-direction: column; gap: 16px; 
             position: relative; min-height: 300px;
-            z-index: 1;
+            z-index: 1; /* Ensure content is above background */
         }
         
         .action-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--color-border); }
         
-        /* Result Items - Force Visibility */
+        /* Result Items - Force Visibility for Naughty Strings */
         .result-group {
             background: rgba(255,255,255,0.02); border: 1px solid var(--color-border);
             border-radius: var(--radius-sm);
-            opacity: 1; /* Always visible */
-            transform: none; /* No transforms */
+            opacity: 1; 
+            transform: none;
             overflow: hidden;
-            display: flex; flex-direction: column; /* Ensure layout context */
+            display: flex; flex-direction: column;
         }
 
+        /* 使用 CSS class selector 搭配 Config 常數 */
         .result-group.winner .group-header { background: rgba(16, 185, 129, 0.1); color: var(--color-success); }
         .result-group.backup .group-header { background: rgba(245, 158, 11, 0.1); color: var(--color-warning); }
         
@@ -205,15 +206,14 @@
             white-space: pre-wrap;
         }
         
-        /* Loading & Empty States */
-        /* Changed to Absolute Overlay to prevent Layout Shift */
+        /* Loading Overlay - Absolute to prevent layout shifts */
         .state-overlay {
             position: absolute; inset: 0; 
-            display: none; /* Hidden by default */
+            display: none;
             flex-direction: column;
             justify-content: center; align-items: center; 
             color: var(--color-text-muted);
-            background: var(--color-bg-card); /* Cover the content */
+            background: var(--color-bg-card);
             z-index: 10;
         }
         .state-overlay.active { display: flex; }
@@ -371,7 +371,12 @@
             PREVIEW_LIMIT: 30,
             MAX_RENDER_ITEMS: 100,
             TOAST_DURATION: 3000,
-            ANIMATION_DELAY: 500
+            ANIMATION_DELAY: 500,
+            // [REFACTOR] 定義結果類型常數，避免 Magic String
+            TYPES: {
+                WINNER: 'winner',
+                BACKUP: 'backup'
+            }
         },
         REGEX: {
             INVALID_CHARS: /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u202A-\u202E\uFEFF]/g,
@@ -552,8 +557,6 @@
                 this._animateLoadingText();
             } else {
                 this.els.stateLoading.classList.remove('active');
-                // Don't show empty state if we have results, so we do nothing here.
-                // The logic calling this should ensure results are rendered.
             }
         }
 
@@ -575,15 +578,27 @@
             this.els.resultContainer.innerHTML = ''; 
             
             const fragment = document.createDocumentFragment();
-            const winnerGroup = this._createResultGroup('🎉 正取名單', winners, 'winner');
+            
+            // [REFACTOR] 使用 CONFIG.UI.TYPES.WINNER
+            const winnerGroup = this._createResultGroup(
+                '🎉 正取名單', 
+                winners, 
+                CONFIG.UI.TYPES.WINNER
+            );
             fragment.appendChild(winnerGroup);
+            
             if (backups.length > 0) {
-                const backupGroup = this._createResultGroup('⚠️ 備取名單', backups, 'backup');
+                // [REFACTOR] 使用 CONFIG.UI.TYPES.BACKUP
+                const backupGroup = this._createResultGroup(
+                    '⚠️ 備取名單', 
+                    backups, 
+                    CONFIG.UI.TYPES.BACKUP
+                );
                 fragment.appendChild(backupGroup);
             }
             this.els.resultContainer.appendChild(fragment);
             
-            // Force repaint hack
+            // Force repaint hack (Safety net)
             void this.els.resultContainer.offsetWidth;
             
             this._enableActions(true);
@@ -601,7 +616,9 @@
                 const listFragment = document.createDocumentFragment();
                 const renderCount = Math.min(list.length, CONFIG.UI.MAX_RENDER_ITEMS);
                 for (let i = 0; i < renderCount; i++) {
-                    const prefix = type === 'backup' ? 'B' : '';
+                    // [REFACTOR] 這裡的判斷邏輯也必須使用常數，確保 prefix 正確
+                    const prefix = type === CONFIG.UI.TYPES.BACKUP ? 'B' : '';
+                    
                     const indexStr = `${prefix}${String(i + 1).padStart(2, '0')}`;
                     const row = Utils.dom('div', { className: 'result-row' },
                         Utils.dom('span', { className: 'index', text: indexStr }),
