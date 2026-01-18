@@ -5,35 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lottery Pro | Professional Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            /* Modern Dark Theme Palette (Zinc/Indigo) */
-            --bg-body: #09090b;
-            --bg-card: #18181b;
-            --bg-input: #27272a;
-            --bg-chip: #3f3f46;
-            --text-main: #f4f4f5;
-            --text-muted: #a1a1aa;
+            /* Theme Variables */
+            --color-bg-body: #09090b;
+            --color-bg-card: #18181b;
+            --color-bg-input: #27272a;
+            --color-bg-chip: #3f3f46;
             
-            --accent: #6366f1; /* Indigo 500 */
-            --accent-hover: #4f46e5;
-            --accent-dim: rgba(99, 102, 241, 0.1);
+            --color-text-main: #f4f4f5;
+            --color-text-muted: #a1a1aa;
             
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --border: #27272a;
+            --color-accent: #6366f1;
+            --color-accent-hover: #4f46e5;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-border: #27272a;
             
-            --radius: 12px;
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            
+            --transition-fast: 0.2s ease;
         }
 
+        /* Base Reset */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-
+        
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--color-bg-body);
+            color: var(--color-text-main);
             margin: 0;
             padding: 20px;
             min-height: 100vh;
@@ -42,72 +46,13 @@
             align-items: center;
         }
 
-        /* Focus Visibility for Accessibility */
+        /* Accessibility */
         *:focus-visible {
-            outline: 2px solid var(--accent);
+            outline: 2px solid var(--color-accent);
             outline-offset: 2px;
         }
 
-        /* --- Toast Notification System --- */
-        .toast-container {
-            position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; display: flex; flex-direction: column; gap: 8px;
-            pointer-events: none; width: 90%; max-width: 400px;
-        }
-        .toast {
-            background: rgba(39, 39, 42, 0.95);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: var(--shadow-lg);
-            display: flex; align-items: center; gap: 10px;
-            opacity: 0; transform: translateY(-10px) scale(0.98);
-            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .toast.out { animation: toastOut 0.2s ease-in forwards; }
-        
-        @keyframes toastIn { to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
-
-        /* --- Custom Modal System (A11y Enhanced) --- */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px); z-index: 10000;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
-        }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        
-        .modal-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 24px; width: 90%; max-width: 400px;
-            box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; flex-direction: column; gap: 16px;
-        }
-        .modal-overlay.active .modal-card { transform: scale(1); }
-
-        .modal-title { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
-        .modal-body { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
-        
-        .btn-modal {
-            padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; border: none; transition: 0.2s;
-        }
-        .btn-modal.cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-        .btn-modal.cancel:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
-        .btn-modal.confirm { background: var(--accent); color: white; }
-        .btn-modal.confirm:hover { background: var(--accent-hover); }
-
-        /* --- Layout --- */
-        .main-container {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-            gap: 24px; width: 100%; max-width: 1200px; margin-top: 20px;
-        }
-
+        /* Typography & Layout */
         header { margin: 20px 0 30px; text-align: center; }
         h1 { 
             margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.025em;
@@ -115,287 +60,296 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .card {
-            background: var(--bg-card); border-radius: var(--radius); padding: 24px;
-            border: 1px solid var(--border); box-shadow: var(--shadow-lg);
-            display: flex; flex-direction: column; height: 100%;
-            transition: border-color 0.2s;
+        .main-container {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 24px; width: 100%; max-width: 1200px;
         }
-        .card:focus-within { border-color: #3f3f46; }
+
+        /* Components: Card */
+        .card {
+            background: var(--color-bg-card);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            display: flex; flex-direction: column; height: 100%;
+            position: relative; /* For absolute positioning context */
+        }
 
         .card-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+            margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border);
         }
         .card-title { font-size: 1.1rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 10px; }
-        .card-title svg { color: var(--text-muted); }
+        .icon { width: 20px; height: 20px; color: var(--color-text-muted); }
 
-        /* --- Inputs --- */
+        /* Components: Inputs */
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-        .input-group { background: var(--bg-input); padding: 10px 12px; border-radius: 8px; border: 1px solid transparent; transition: 0.2s; }
-        .input-group:focus-within { border-color: var(--accent); background: #202022; }
-        .input-group label { display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .input-group input { width: 100%; background: transparent; border: none; color: white; font-size: 1.5rem; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
-
-        /* --- Data Entry Area --- */
-        .input-area-wrapper { position: relative; margin-bottom: 15px; }
-        textarea {
-            width: 100%; height: 180px; background: var(--bg-input);
-            border: 1px solid transparent; border-radius: 8px;
-            color: var(--text-main); padding: 16px; font-size: 0.95rem; line-height: 1.6;
-            resize: vertical; font-family: 'Inter', sans-serif;
-            transition: 0.2s;
-        }
-        textarea:focus { border-color: var(--accent); background: #202022; }
-        textarea::placeholder { color: #52525b; }
-
-        /* --- Chips Preview --- */
-        .chips-container {
-            display: flex; flex-wrap: wrap; gap: 6px; max-height: 0; overflow: hidden;
-            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .chips-container.active { max-height: 100px; overflow-y: auto; margin-bottom: 15px; padding-bottom: 4px; }
-        .chip {
-            background: var(--bg-chip); padding: 4px 8px; border-radius: 4px;
-            font-size: 0.75rem; color: var(--text-main); cursor: default;
-            animation: fadeIn 0.2s ease;
-            word-break: break-all;
-            white-space: normal;
-        }
-        .chip-badge { opacity: 0.6; font-size: 0.7rem; }
-
-        /* --- Toggle Switch Row --- */
-        .status-bar-row { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-top: auto; padding-top: 10px; flex-wrap: wrap; gap: 15px;
-        }
-        .toggles-group { display: flex; gap: 20px; flex-wrap: wrap; }
         
-        .toggle-wrapper { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
-        .switch { position: relative; display: inline-block; width: 32px; height: 18px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #3f3f46; transition: .3s; border-radius: 34px;
+        .input-group { 
+            background: var(--color-bg-input); padding: 10px 12px; 
+            border-radius: var(--radius-sm); border: 1px solid transparent; 
+            transition: var(--transition-fast); 
         }
-        .slider:before {
-            position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
-            background-color: white; transition: .3s; border-radius: 50%;
+        .input-group:focus-within { border-color: var(--color-accent); background: #202022; }
+        .input-group label { 
+            display: block; font-size: 0.75rem; color: var(--color-text-muted); 
+            font-weight: 500; margin-bottom: 4px; text-transform: uppercase; 
         }
-        input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(14px); }
-        .toggle-label { font-size: 0.8rem; color: var(--text-muted); transition: color 0.2s; font-weight: 500; }
-        input:checked ~ .toggle-label { color: var(--text-main); }
+        .input-group input { 
+            width: 100%; background: transparent; border: none; 
+            color: white; font-size: 1.5rem; font-family: 'JetBrains Mono', monospace; font-weight: 600; 
+        }
 
-        /* --- Buttons --- */
+        textarea {
+            width: 100%; height: 180px; background: var(--color-bg-input);
+            border: 1px solid transparent; border-radius: var(--radius-sm);
+            color: var(--color-text-main); padding: 16px; font-size: 0.95rem; line-height: 1.6;
+            resize: vertical; font-family: 'Inter', sans-serif; transition: var(--transition-fast);
+            margin-bottom: 15px;
+        }
+        textarea:focus { border-color: var(--color-accent); background: #202022; }
+
+        /* Components: Buttons */
         .btn-primary {
             width: 100%; margin-top: 20px; padding: 16px;
-            border-radius: 12px; border: none;
-            background: var(--accent); color: white;
-            font-size: 1rem; font-weight: 600;
-            cursor: pointer; transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+            border-radius: var(--radius-md); border: none;
+            background: var(--color-accent); color: white;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: var(--transition-fast);
         }
-        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
-        .btn-primary:active { transform: translateY(0); }
-        .btn-primary:disabled { background: #3f3f46; color: #71717a; cursor: not-allowed; transform: none; }
+        .btn-primary:hover:not(:disabled) { background: var(--color-accent-hover); transform: translateY(-1px); }
+        .btn-primary:disabled { background: var(--color-bg-chip); color: var(--color-text-muted); cursor: not-allowed; }
 
         .btn-icon {
-            background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+            background: transparent; border: 1px solid var(--color-border); color: var(--color-text-muted);
             padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
-            transition: 0.2s; display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 6px; transition: var(--transition-fast);
         }
-        .btn-icon:hover { background: rgba(255,255,255,0.05); color: var(--text-main); border-color: #52525b; }
+        .btn-icon:hover { background: rgba(255,255,255,0.05); color: var(--color-text-main); border-color: #52525b; }
 
-        /* --- Results Area --- */
-        .result-container { flex: 1; display: flex; flex-direction: column; gap: 16px; position: relative; min-height: 300px; }
-        
-        /* Loading Overlay */
-        .loading-overlay {
-            position: absolute; inset: 0; background: var(--bg-card); z-index: 10;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        .btn-action {
+            padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-border);
+            background: var(--color-bg-input); color: var(--color-text-main); 
+            cursor: pointer; font-size: 0.9rem; font-weight: 500;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition-fast);
         }
-        .loading-overlay.active { opacity: 1; pointer-events: all; }
-        
-        .spinner {
-            width: 40px; height: 40px; border: 3px solid #3f3f46;
-            border-top-color: var(--accent); border-radius: 50%;
-            animation: spin 0.8s linear infinite; margin-bottom: 20px;
-        }
-        .loading-text { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; }
+        .btn-action:hover:not(:disabled) { background: var(--color-bg-chip); }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-action.copied { background: var(--color-success); border-color: var(--color-success); color: white; }
 
-        /* Result Groups */
+        /* Components: Chips */
+        .chips-container {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0; max-height: 0;
+            overflow: hidden; transition: max-height 0.3s ease;
+        }
+        .chips-container.has-items { max-height: 100px; overflow-y: auto; margin-bottom: 15px; }
+        .chip {
+            background: var(--color-bg-chip); padding: 4px 8px; border-radius: 4px;
+            font-size: 0.75rem; color: var(--color-text-main); 
+            overflow-wrap: anywhere; word-break: break-all;
+        }
+
+        /* Components: Toggle */
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .toggle-group { display: flex; gap: 16px; }
+        .toggle-wrapper { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+        .toggle-label { font-size: 0.8rem; color: var(--color-text-muted); }
+        .switch { position: relative; width: 32px; height: 18px; background: var(--color-bg-chip); border-radius: 20px; transition: 0.3s; }
+        .switch::after { 
+            content: ''; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; 
+            background: white; border-radius: 50%; transition: 0.3s; 
+        }
+        input:checked + .switch { background: var(--color-accent); }
+        input:checked + .switch::after { transform: translateX(14px); }
+
+        /* Results Area */
+        .result-container { 
+            flex: 1; display: flex; flex-direction: column; gap: 16px; 
+            position: relative; min-height: 300px;
+            z-index: 1;
+        }
+        
+        .action-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--color-border); }
+        
+        /* Result Items - Force Visibility */
         .result-group {
-            background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-            border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
-            opacity: 0; transform: translateY(10px);
+            background: rgba(255,255,255,0.02); border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            opacity: 1; /* Always visible */
+            transform: none; /* No transforms */
+            overflow: hidden;
+            display: flex; flex-direction: column; /* Ensure layout context */
         }
-        .result-group.show { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        .result-group.winner .group-header { background: rgba(16, 185, 129, 0.1); color: var(--color-success); }
+        .result-group.backup .group-header { background: rgba(245, 158, 11, 0.1); color: var(--color-warning); }
         
-        .group-header { padding: 12px 16px; font-size: 0.9rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-        .winner .group-header { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .backup .group-header { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-
-        .list-scroll { max-height: 250px; overflow-y: auto; padding: 8px; }
-        .list-scroll::-webkit-scrollbar { width: 4px; }
-        .list-scroll::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
-
-        .result-row {
-            display: flex; padding: 8px 12px; border-radius: 4px; 
-            font-size: 0.95rem; align-items: center; gap: 12px;
+        .group-header { padding: 10px 16px; font-size: 0.9rem; font-weight: 600; display: flex; justify-content: space-between; flex-shrink: 0; }
+        .list-scroll { 
+            max-height: 250px; 
+            overflow-y: auto; 
+            padding: 8px; 
+            width: 100%;
         }
+        
+        .result-row { display: flex; padding: 8px 12px; border-radius: 4px; font-size: 0.95rem; gap: 12px; align-items: center; }
         .result-row:hover { background: rgba(255,255,255,0.05); }
-        .index { font-family: 'JetBrains Mono', monospace; color: var(--text-muted); font-size: 0.8rem; width: 24px; text-align: right; }
+        .index { font-family: 'JetBrains Mono', monospace; color: var(--color-text-muted); width: 30px; text-align: right; flex-shrink: 0; }
         
         .name { 
-            color: var(--text-main); font-weight: 500;
+            color: var(--color-text-main); 
+            min-width: 0; 
+            flex-grow: 1;
+            overflow-wrap: anywhere; 
             word-break: break-all;
-            white-space: normal;
+            white-space: pre-wrap;
+        }
+        
+        /* Loading & Empty States */
+        /* Changed to Absolute Overlay to prevent Layout Shift */
+        .state-overlay {
+            position: absolute; inset: 0; 
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            justify-content: center; align-items: center; 
+            color: var(--color-text-muted);
+            background: var(--color-bg-card); /* Cover the content */
+            z-index: 10;
+        }
+        .state-overlay.active { display: flex; }
+        
+        .empty-icon { font-size: 3rem; margin-bottom: 10px; filter: grayscale(1); }
+        .spinner { font-size: 2rem; margin-bottom: 10px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Overlays & Utilities */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            z-index: 999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: 0.2s;
+        }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+
+        /* Toast */
+        .toast-container { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .toast { 
+            background: var(--color-bg-card); color: var(--color-text-main); padding: 12px 16px; 
+            border-radius: 8px; border: 1px solid var(--color-border); box-shadow: var(--shadow-lg);
+            display: flex; gap: 10px; align-items: center; animation: fadeIn 0.3s;
         }
 
-        .empty-state {
-            position: absolute; inset: 0; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: var(--text-muted); opacity: 0.5;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .action-bar { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; 
-            margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border); 
-        }
-        .btn-action {
-            padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input);
-            color: var(--text-main); cursor: pointer; font-size: 0.9rem; font-weight: 500;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
-        }
-        .btn-action:hover:not(:disabled) { background: #3f3f46; border-color: #52525b; }
-        /* 視覺回饋：複製成功樣式 */
-        .btn-action.copied { background: var(--success); border-color: var(--success); color: white; }
-        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 768px) { 
-            .main-container { grid-template-columns: 1fr; } 
-            .card { min-height: auto; }
-            .chips-container.active { max-height: 80px; }
-        }
+        @media (max-width: 768px) { .main-container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<div class="toast-container" id="toast-container"></div>
+<!-- Toast Anchor -->
+<div id="toast-container" class="toast-container"></div>
 
-<!-- Modal Structure -->
-<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-card">
-        <div class="modal-title" id="modal-title">提示</div>
-        <div class="modal-body" id="modal-body">內容</div>
-        <div class="modal-actions">
-            <button class="btn-modal cancel" id="modal-btn-cancel">取消</button>
-            <button class="btn-modal confirm" id="modal-btn-confirm">確定</button>
+<!-- Modal Overlay -->
+<div id="modal-overlay" class="overlay">
+    <div class="card" style="width: 90%; max-width: 400px; height: auto;">
+        <h3 class="card-title" id="modal-title">提示</h3>
+        <p id="modal-body" style="color: var(--color-text-muted); line-height: 1.5; margin: 16px 0;">內容</p>
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+            <button class="btn-icon" id="modal-cancel">取消</button>
+            <button class="btn-action" id="modal-confirm" style="background: var(--color-accent); border: none; color: white;">確認</button>
         </div>
     </div>
 </div>
 
 <header>
     <h1>Lottery Pro</h1>
-    <!-- Subtitle removed -->
 </header>
 
 <div class="main-container">
-    <!-- Setting Section -->
+    <!-- Config Section -->
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                <!-- Icon: Settings -->
+                <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
                 名單與設定
             </h2>
-            <button class="btn-icon" onclick="app.requestClearInput()">
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            <button class="btn-icon" id="btn-clear">
+                <!-- Icon: Trash -->
+                <svg class="icon" style="width:14px; height:14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 清空
             </button>
         </div>
 
         <div class="settings-grid">
             <div class="input-group">
-                <label>正取人數</label>
-                <input type="number" id="count-main" value="20" min="1">
+                <label for="input-count-main">正取人數</label>
+                <input type="number" id="input-count-main" value="20" min="1">
             </div>
             <div class="input-group">
-                <label>備取人數</label>
-                <input type="number" id="count-backup" value="3" min="0">
+                <label for="input-count-backup">備取人數</label>
+                <input type="number" id="input-count-backup" value="3" min="0">
             </div>
         </div>
 
-        <div class="input-area-wrapper">
-            <textarea id="input-names" placeholder="在此貼上名單（支援 Excel 格式）&#10;一行一個名字..."></textarea>
-            
-            <!-- Visual Feedback for Names (Chips) -->
+        <div>
+            <textarea id="input-names" placeholder="請在此貼上名單...&#10;支援 Excel 複製貼上&#10;一行一個名字"></textarea>
             <div id="chips-area" class="chips-container"></div>
         </div>
 
-        <div class="status-bar-row">
-            <div class="toggles-group">
+        <div class="status-bar">
+            <div class="toggle-group">
                 <label class="toggle-wrapper" title="自動儲存輸入內容">
-                    <div class="switch">
-                        <input type="checkbox" id="toggle-memory">
-                        <span class="slider"></span>
-                    </div>
+                    <input type="checkbox" id="toggle-memory" hidden>
+                    <div class="switch"></div>
                     <span class="toggle-label">記憶名單</span>
                 </label>
-                <label class="toggle-wrapper" title="移除相同的名字">
-                    <div class="switch">
-                        <input type="checkbox" id="toggle-dedup" checked>
-                        <span class="slider"></span>
-                    </div>
+                <label class="toggle-wrapper" title="自動移除重複的名字">
+                    <input type="checkbox" id="toggle-dedup" hidden checked>
+                    <div class="switch"></div>
                     <span class="toggle-label">去除重複</span>
                 </label>
-                <!-- Removed clean toggle -->
             </div>
-            <span id="line-count" style="font-family:'JetBrains Mono'; font-size:0.8rem; color:var(--text-muted)">0 人</span>
+            <span id="label-count" style="font-family:'JetBrains Mono'; font-size:0.8rem; color:var(--color-text-muted)">0 人</span>
         </div>
 
-        <button class="btn-primary" id="btn-run" onclick="app.runLottery()">
-            開始抽選
-        </button>
+        <button class="btn-primary" id="btn-run">開始抽選</button>
     </div>
 
     <!-- Result Section -->
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <!-- Icon: Chart/Result -->
+                <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 抽選結果
             </h2>
-            <div style="font-size:0.75rem; color:var(--success); background:rgba(16,185,129,0.1); padding:4px 8px; border-radius:4px; font-weight:500;">
+            <div style="font-size:0.75rem; color:var(--color-success); background:rgba(16,185,129,0.1); padding:4px 8px; border-radius:4px;">
                 🔒 CSPRNG Active
             </div>
         </div>
 
         <div id="result-area" class="result-container">
-            <!-- Loading State -->
-            <div class="loading-overlay" id="loading-overlay">
-                <div class="spinner"></div>
-                <div class="loading-text" id="loading-text">INITIALIZING...</div>
-            </div>
-
-            <!-- Empty State -->
-            <div class="empty-state" id="empty-state">
-                <div style="font-size: 3rem; margin-bottom: 10px; filter: grayscale(1);">🎲</div>
+            <!-- Loading & Empty States -->
+            <div class="state-overlay active" id="state-empty">
+                <div class="empty-icon">🎲</div>
                 <p>準備就緒</p>
             </div>
+            
+            <div class="state-overlay" id="state-loading">
+                <div class="spinner">⏳</div>
+                <p id="loading-text">INITIALIZING...</p>
+            </div>
+            
+            <div id="result-list-container" style="display: flex; flex-direction: column; gap: 16px;"></div>
         </div>
 
         <div class="action-bar">
-            <button class="btn-action" id="btn-copy" onclick="app.copyResults()" disabled>
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            <button class="btn-action" id="btn-copy" disabled>
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
                 複製結果
             </button>
-            <button class="btn-action" id="btn-download" onclick="app.downloadResults()" disabled>
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <button class="btn-action" id="btn-download" disabled>
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 下載報告
             </button>
         </div>
@@ -403,177 +357,29 @@
 </div>
 
 <script>
-    // 安全性修正：加入 \u202A-\u202E 以過濾 RTL 攻擊字符
-    const INVALID_CHARS_REGEX = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u200B-\u200D\u202A-\u202E\uFEFF]/g;
+    /**
+     * @fileoverview Lottery Pro - Professional Drawing Application
+     */
 
-    // --- Custom Modal System (A11y Enhanced) ---
-    const Modal = {
-        overlay: document.getElementById('modal-overlay'),
-        title: document.getElementById('modal-title'),
-        body: document.getElementById('modal-body'),
-        btnConfirm: document.getElementById('modal-btn-confirm'),
-        btnCancel: document.getElementById('modal-btn-cancel'),
-        currentConfirmCallback: null,
-        lastFocusedElement: null,
-
-        init() {
-            // 點擊事件
-            this.btnCancel.onclick = () => this.hide();
-            this.btnConfirm.onclick = () => {
-                if (this.currentConfirmCallback) this.currentConfirmCallback();
-                this.hide();
-            };
-            this.overlay.onclick = (e) => {
-                if(e.target === this.overlay) this.hide();
-            };
-
-            // 鍵盤無障礙支援 (Focus Trap & Shortcuts)
-            document.addEventListener('keydown', (e) => {
-                if (!this.overlay.classList.contains('active')) return;
-
-                if (e.key === 'Escape') this.hide();
-                if (e.key === 'Enter') {
-                    e.preventDefault(); // 防止觸發背景按鈕
-                    this.btnConfirm.click();
-                }
-                if (e.key === 'Tab') {
-                    // 簡單的 Focus Trap: 這裡只有兩個按鈕，循環鎖定
-                    const focusable = [this.btnCancel, this.btnConfirm];
-                    const first = focusable[0];
-                    const last = focusable[focusable.length - 1];
-
-                    if (e.shiftKey) { // Shift + Tab
-                        if (document.activeElement === first) {
-                            e.preventDefault();
-                            last.focus();
-                        }
-                    } else { // Tab
-                        if (document.activeElement === last) {
-                            e.preventDefault();
-                            first.focus();
-                        }
-                    }
-                }
-            });
+    const CONFIG = {
+        STORAGE_KEYS: {
+            NAMES: 'lottery_names',
+            MEMORY_ENABLED: 'lottery_config_memory',
+            DEDUP_ENABLED: 'lottery_config_dedup'
         },
-
-        show(title, text, onConfirm) {
-            this.lastFocusedElement = document.activeElement; // 記住開啟前的位置
-            this.title.textContent = title;
-            this.body.textContent = text;
-            this.currentConfirmCallback = onConfirm;
-            this.overlay.classList.add('active');
-            
-            // 將焦點移至「確認」按鈕，方便鍵盤使用者
-            setTimeout(() => this.btnConfirm.focus(), 50);
+        UI: {
+            PREVIEW_LIMIT: 30,
+            MAX_RENDER_ITEMS: 100,
+            TOAST_DURATION: 3000,
+            ANIMATION_DELAY: 500
         },
-
-        hide() {
-            this.overlay.classList.remove('active');
-            this.currentConfirmCallback = null;
-            // 歸還焦點
-            if (this.lastFocusedElement) {
-                this.lastFocusedElement.focus();
-                this.lastFocusedElement = null;
-            }
-        }
-    };
-    Modal.init();
-
-    // --- Toast Notification System ---
-    const Toast = {
-        container: document.getElementById('toast-container'),
-        show(message, type = 'default') {
-            const el = document.createElement('div');
-            el.className = 'toast';
-            el.style.borderLeft = `4px solid ${type === 'error' ? 'var(--danger)' : (type === 'success' ? 'var(--success)' : 'var(--accent)')}`;
-            
-            const iconSpan = document.createElement('span');
-            iconSpan.textContent = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : 'ℹ️');
-            
-            const msgSpan = document.createElement('span');
-            msgSpan.textContent = message;
-
-            el.appendChild(iconSpan);
-            el.appendChild(msgSpan);
-            this.container.appendChild(el);
-
-            // 3秒後移除
-            setTimeout(() => {
-                el.classList.add('out');
-                el.addEventListener('animationend', () => el.remove());
-            }, 3000);
+        REGEX: {
+            INVALID_CHARS: /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u202A-\u202E\uFEFF]/g,
+            LINE_SPLIT: /\r\n|\n|\r/
         }
     };
 
-    const app = {
-        els: {
-            input: document.getElementById('input-names'),
-            chips: document.getElementById('chips-area'),
-            countMain: document.getElementById('count-main'),
-            countBackup: document.getElementById('count-backup'),
-            lineCount: document.getElementById('line-count'),
-            resultArea: document.getElementById('result-area'),
-            btnCopy: document.getElementById('btn-copy'),
-            btnDownload: document.getElementById('btn-download'),
-            toggleMemory: document.getElementById('toggle-memory'),
-            toggleDedup: document.getElementById('toggle-dedup'),
-            loader: document.getElementById('loading-overlay'),
-            loadingText: document.getElementById('loading-text'),
-            emptyState: document.getElementById('empty-state'),
-            btnRun: document.getElementById('btn-run')
-        },
-        currentResultText: '',
-
-        init() {
-            // 從 LocalStorage 載入設定
-            const loadConfig = (key, defaultVal) => {
-                const val = localStorage.getItem(key);
-                return val === null ? defaultVal : val === 'true';
-            };
-
-            this.els.toggleMemory.checked = loadConfig('lottery_config_memory', false);
-            this.els.toggleDedup.checked = loadConfig('lottery_config_dedup', true);
-            // Removed clean toggle loading
-
-            if (this.els.toggleMemory.checked) {
-                const savedNames = localStorage.getItem('lottery_names');
-                if (savedNames) this.els.input.value = savedNames;
-            }
-
-            this.updateData();
-
-            // 輸入監聽
-            this.els.input.addEventListener('input', this.debounce(() => {
-                this.updateData();
-                this.trySave();
-            }, 200));
-
-            // 設定監聽
-            const bindToggle = (key, el, msg) => {
-                el.addEventListener('change', (e) => {
-                    localStorage.setItem(key, e.target.checked);
-                    // 如果改了去重，需要立即更新 UI
-                    if (key === 'lottery_config_dedup') {
-                        this.updateData();
-                    }
-                    if (msg) Toast.show(msg, e.target.checked ? "success" : "default");
-                    this.trySave();
-                });
-            };
-
-            bindToggle('lottery_config_memory', this.els.toggleMemory, "自動記憶功能已變更");
-            bindToggle('lottery_config_dedup', this.els.toggleDedup, "去除重複功能已變更");
-        },
-
-        trySave() {
-            if (this.els.toggleMemory.checked) {
-                localStorage.setItem('lottery_names', this.els.input.value);
-            } else {
-                localStorage.removeItem('lottery_names');
-            }
-        },
-
+    const Utils = {
         debounce(func, wait) {
             let timeout;
             return function(...args) {
@@ -582,275 +388,383 @@
             };
         },
 
-        sanitizeInput(text) {
-            // 只保留安全性過濾，移除編號過濾
-            let cleanText = text.replace(INVALID_CHARS_REGEX, '').trim();
-            return cleanText;
-        },
-
-        // 更新介面與數據
-        updateData() {
-            const names = this.getNames();
-            this.els.lineCount.textContent = `${names.length} 人`;
+        dom(tag, { className = '', text = '', ...props } = {}, ...children) {
+            const el = document.createElement(tag);
+            if (className) el.className = className;
+            if (text !== undefined && text !== null && text !== '') {
+                el.textContent = String(text);
+            }
             
-            const previewLimit = 30;
-            const displayNames = names.slice(0, previewLimit);
-            
-            if (names.length > 0) {
-                this.els.chips.classList.add('active');
-                const fragment = document.createDocumentFragment();
-                
-                displayNames.forEach(n => {
-                    const chip = document.createElement('div');
-                    chip.className = 'chip';
-                    chip.textContent = n;
-                    fragment.appendChild(chip);
-                });
-
-                if (names.length > previewLimit) {
-                    const moreChip = document.createElement('div');
-                    moreChip.className = 'chip';
-                    const badge = document.createElement('span');
-                    badge.className = 'chip-badge';
-                    badge.textContent = `+${names.length - previewLimit}`;
-                    moreChip.appendChild(badge);
-                    fragment.appendChild(moreChip);
+            Object.entries(props).forEach(([key, val]) => {
+                if (key.startsWith('on')) {
+                    el.addEventListener(key.slice(2).toLowerCase(), val);
+                } else if (key === 'style' && typeof val === 'object') {
+                    Object.assign(el.style, val);
+                } else {
+                    el.setAttribute(key, val);
                 }
-                
-                this.els.chips.innerHTML = '';
-                this.els.chips.appendChild(fragment);
-            } else {
-                this.els.chips.classList.remove('active');
-                this.els.chips.textContent = '';
-            }
+            });
+            children.forEach(child => {
+                if (child) el.appendChild(child);
+            });
+            return el;
         },
 
-        getNames() {
-            const rawNames = this.els.input.value.split('\n')
-                .map(line => this.sanitizeInput(line))
-                .filter(line => line !== '' && !/^\s*$/.test(line)); // 更嚴格的空行過濾
-            
-            if (this.els.toggleDedup.checked) {
-                return [...new Set(rawNames)];
-            }
-            return rawNames;
+        sanitize(text) {
+            if (!text) return '';
+            return text.replace(CONFIG.REGEX.INVALID_CHARS, '').trim();
         },
 
-        requestClearInput() {
-            if(this.els.input.value === '') return;
-            
-            if(this.getNames().length > 5) {
-                Modal.show(
-                    "清空確認",
-                    "您確定要清空所有名單嗎？",
-                    () => this.performClear()
-                );
-            } else {
-                this.performClear();
-            }
+        generateFilename() {
+            const now = new Date();
+            const format = (n) => String(n).padStart(2, '0');
+            return `Lottery_Result_${now.getFullYear()}${format(now.getMonth()+1)}${format(now.getDate())}.txt`;
         },
 
-        performClear() {
-            this.els.input.value = '';
-            this.updateData();
-            this.trySave();
-            Toast.show("名單已清空");
+        safeStorageSet(key, value) {
+            try { localStorage.setItem(key, value); } catch (e) { console.warn('Storage Error'); }
         },
+        safeStorageGet(key) {
+            try { return localStorage.getItem(key); } catch (e) { return null; }
+        },
+        safeStorageRemove(key) {
+             try { localStorage.removeItem(key); } catch (e) {}
+        }
+    };
 
-        // 核心安全隨機邏輯
-        secureShuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
+    class ToastService {
+        constructor() { this.container = document.getElementById('toast-container'); }
+        show(message, type = 'info') {
+            const colors = { success: 'var(--color-success)', error: 'var(--color-danger)', info: 'var(--color-accent)' };
+            const icons = { success: '✅', error: '⚠️', info: 'ℹ️' };
+            const toast = Utils.dom('div', { 
+                className: 'toast',
+                style: { borderLeft: `4px solid ${colors[type] || colors.info}` }
+            }, Utils.dom('span', { text: icons[type] || icons.info }), Utils.dom('span', { text: message }));
+            this.container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, CONFIG.UI.TOAST_DURATION);
+        }
+    }
+
+    class ModalService {
+        constructor() {
+            this.overlay = document.getElementById('modal-overlay');
+            this.title = document.getElementById('modal-title');
+            this.body = document.getElementById('modal-body');
+            this.btnConfirm = document.getElementById('modal-confirm');
+            this.btnCancel = document.getElementById('modal-cancel');
+            this.callback = null;
+            this._bindEvents();
+        }
+        _bindEvents() {
+            const close = () => this._hide();
+            this.btnCancel.onclick = close;
+            this.overlay.onclick = (e) => { if(e.target === this.overlay) close(); };
+            this.btnConfirm.onclick = () => { if (this.callback) this.callback(); close(); };
+        }
+        confirm(title, message, onConfirm) {
+            this.title.textContent = title;
+            this.body.textContent = message;
+            this.callback = onConfirm;
+            this.overlay.classList.add('active');
+        }
+        _hide() { this.overlay.classList.remove('active'); this.callback = null; }
+    }
+
+    class LotteryEngine {
+        shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
                 const randomBuffer = new Uint32Array(1);
                 window.crypto.getRandomValues(randomBuffer);
                 const j = Math.floor((randomBuffer[0] / (0xFFFFFFFF + 1)) * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+                [arr[i], arr[j]] = [arr[j], arr[i]];
             }
-            return array;
-        },
-
-        runLottery() {
-            const names = this.getNames();
-            const countMain = parseInt(this.els.countMain.value) || 0;
-            const countBackup = parseInt(this.els.countBackup.value) || 0;
-            const totalNeed = countMain + countBackup;
-
-            if (names.length === 0) return Toast.show("請先輸入名單", "error");
-            if (countMain <= 0) return Toast.show("正取人數必須大於 0", "error");
-
-            const executeRun = () => {
-                this.els.btnRun.disabled = true;
-                this.els.loader.classList.add('active');
-                
-                // 清理 UI
-                const existingGroups = this.els.resultArea.querySelectorAll('.result-group, .overflow-msg');
-                existingGroups.forEach(el => el.remove());
-                if(this.els.emptyState) this.els.emptyState.style.display = 'none';
-
-                let step = 0;
-                const steps = ["INITIALIZING ENTROPY...", "SHUFFLING DATA...", "VERIFYING...", "GENERATING..."];
-                
-                const interval = setInterval(() => {
-                    this.els.loadingText.textContent = steps[step % steps.length];
-                    step++;
-                }, 200);
-
-                setTimeout(() => {
-                    clearInterval(interval);
-                    this.els.loader.classList.remove('active');
-                    this.els.btnRun.disabled = false;
-                    
-                    const shuffled = this.secureShuffle([...names]);
-                    const winners = shuffled.slice(0, countMain);
-                    const backups = shuffled.slice(countMain, countMain + countBackup);
-                    
-                    this.renderResults(winners, backups);
-                    this.prepareExportData(winners, backups, names.length);
-                    Toast.show("抽選完成", "success");
-
-                }, 800);
-            };
-
-            if (names.length < totalNeed) {
-                Modal.show(
-                    "人數不足警告",
-                    `名單人數 (${names.length}) 少於總需求 (${totalNeed})。是否仍要繼續執行？`,
-                    () => executeRun()
-                );
-            } else {
-                executeRun();
-            }
-        },
-
-        renderResults(winners, backups) {
-            const MAX_RENDER = 100; // 渲染保護上限
-
-            const createGroup = (titleText, list, type, delay) => {
-                const groupDiv = document.createElement('div');
-                groupDiv.className = `result-group ${type}`;
-                groupDiv.style.animationDelay = `${delay}s`;
-
-                const header = document.createElement('div');
-                header.className = 'group-header';
-                
-                const titleSpan = document.createElement('span');
-                titleSpan.textContent = titleText;
-                
-                const countSpan = document.createElement('span');
-                countSpan.textContent = list.length > 0 ? list.length : '無';
-
-                header.appendChild(titleSpan);
-                header.appendChild(countSpan);
-                groupDiv.appendChild(header);
-
-                const listScroll = document.createElement('div');
-                listScroll.className = 'list-scroll';
-
-                if(list.length === 0) {
-                    const emptyMsg = document.createElement('div');
-                    emptyMsg.style.cssText = "padding:20px; color:var(--text-muted); text-align:center; font-size:0.9rem;";
-                    // UI 優化：顯示更明確的訊息
-                    emptyMsg.textContent = type === 'backup' ? "(名單已耗盡，無備取)" : "(無)";
-                    listScroll.appendChild(emptyMsg);
-                } else {
-                    const fragment = document.createDocumentFragment();
-                    // 渲染保護邏輯
-                    const renderList = list.slice(0, MAX_RENDER);
-                    
-                    renderList.forEach((n, i) => {
-                        const row = document.createElement('div');
-                        row.className = 'result-row';
-
-                        const indexSpan = document.createElement('span');
-                        indexSpan.className = 'index';
-                        const prefix = type === 'backup' ? 'B' : '';
-                        indexSpan.textContent = `${prefix}${String(i+1).padStart(2, '0')}`;
-
-                        const nameSpan = document.createElement('span');
-                        nameSpan.className = 'name';
-                        nameSpan.textContent = n; 
-
-                        row.appendChild(indexSpan);
-                        row.appendChild(nameSpan);
-                        fragment.appendChild(row);
-                    });
-                    
-                    if (list.length > MAX_RENDER) {
-                        const moreDiv = document.createElement('div');
-                        moreDiv.style.cssText = "padding:10px; text-align:center; color:var(--text-muted); font-size:0.8rem; border-top:1px solid var(--border);";
-                        moreDiv.textContent = `...還有 ${list.length - MAX_RENDER} 人 (請下載完整名單)`;
-                        fragment.appendChild(moreDiv);
-                    }
-                    
-                    listScroll.appendChild(fragment);
-                }
-
-                groupDiv.appendChild(listScroll);
-                return groupDiv;
-            };
-
-            const winnerGroup = createGroup('🎉 正取名單', winners, 'winner', 0);
-            this.els.resultArea.appendChild(winnerGroup);
-            setTimeout(() => winnerGroup.classList.add('show'), 10);
-
-            // 只有在真的有設定備取需求，或者真的有備取人選時才顯示
-            const needBackup = parseInt(this.els.countBackup.value) > 0;
-            if (backups.length > 0 || needBackup) {
-                const backupGroup = createGroup('⚠️ 備取名單', backups, 'backup', 0.15);
-                this.els.resultArea.appendChild(backupGroup);
-                setTimeout(() => backupGroup.classList.add('show'), 150);
-            }
-        },
-
-        prepareExportData(winners, backups, totalCount) {
+            return arr;
+        }
+        draw(candidates, mainCount, backupCount) {
+            if (!candidates || candidates.length === 0) throw new Error("名單為空");
+            const shuffled = this.shuffle(candidates);
+            const winners = shuffled.slice(0, mainCount);
+            const backups = shuffled.slice(mainCount, mainCount + backupCount);
+            return { winners, backups };
+        }
+        processInput(rawValue, shouldDedup) {
+            const lines = rawValue.split(CONFIG.REGEX.LINE_SPLIT)
+                .map(line => Utils.sanitize(line))
+                .filter(line => line !== '');
+            return shouldDedup ? [...new Set(lines)] : lines;
+        }
+        formatReport(winners, backups, totalCount) {
             const time = new Date().toLocaleString('zh-TW');
             let text = `=== 抽選結果報告 ===\n時間: ${time}\n總人數: ${totalCount}\n\n`;
             text += `【正取名單】(${winners.length}人)\n`;
             winners.forEach((n, i) => text += `${i+1}. ${n}\n`);
-            
             if (backups.length > 0) {
                 text += `\n【備取名單】(${backups.length}人)\n`;
                 backups.forEach((n, i) => text += `備${i+1}. ${n}\n`);
-            } else {
-                 text += `\n【備取名單】(0人)\n(名單已耗盡)\n`;
             }
+            return text;
+        }
+    }
 
-            this.currentResultText = text;
-            this.els.btnCopy.disabled = false;
-            this.els.btnDownload.disabled = false;
-        },
+    class UIManager {
+        constructor() {
+            this.els = {
+                input: document.getElementById('input-names'),
+                chips: document.getElementById('chips-area'),
+                countLabel: document.getElementById('label-count'),
+                resultContainer: document.getElementById('result-list-container'),
+                stateEmpty: document.getElementById('state-empty'),
+                stateLoading: document.getElementById('state-loading'),
+                loadingText: document.getElementById('loading-text'),
+                btnRun: document.getElementById('btn-run'),
+                btnCopy: document.getElementById('btn-copy'),
+                btnDownload: document.getElementById('btn-download')
+            };
+        }
 
-        copyResults() {
-            if(!this.currentResultText) return;
-            navigator.clipboard.writeText(this.currentResultText).then(() => {
-                Toast.show("已複製到剪貼簿", "success");
-                // 視覺回饋
-                this.els.btnCopy.classList.add('copied');
-                this.els.btnCopy.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 已複製`;
-                setTimeout(() => {
-                    this.els.btnCopy.classList.remove('copied');
-                    this.els.btnCopy.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> 複製結果`;
-                }, 2000);
-            }).catch(() => Toast.show("複製失敗", "error"));
-        },
+        updatePreview(names) {
+            this.els.countLabel.textContent = `${names.length} 人`;
+            this.els.chips.innerHTML = '';
+            if (names.length === 0) { this.els.chips.classList.remove('has-items'); return; }
+            this.els.chips.classList.add('has-items');
+            const fragment = document.createDocumentFragment();
+            const displayLimit = CONFIG.UI.PREVIEW_LIMIT;
+            names.slice(0, displayLimit).forEach(name => {
+                fragment.appendChild(Utils.dom('div', { className: 'chip', text: name }));
+            });
+            if (names.length > displayLimit) {
+                fragment.appendChild(Utils.dom('div', { className: 'chip', style: { opacity: 0.6 }, text: `+${names.length - displayLimit} more` }));
+            }
+            this.els.chips.appendChild(fragment);
+        }
 
-        downloadResults() {
-            if(!this.currentResultText) return;
-            const blob = new Blob([this.currentResultText], { type: 'text/plain' });
+        setLoading(isLoading) {
+            this.els.btnRun.disabled = isLoading;
+            if (isLoading) {
+                this.els.stateEmpty.classList.remove('active');
+                this.els.stateLoading.classList.add('active');
+                this._animateLoadingText();
+            } else {
+                this.els.stateLoading.classList.remove('active');
+                // Don't show empty state if we have results, so we do nothing here.
+                // The logic calling this should ensure results are rendered.
+            }
+        }
+
+        _animateLoadingText() {
+            const steps = ["SHUFFLING...", "VERIFYING...", "GENERATING..."];
+            let i = 0;
+            this.els.loadingText.textContent = steps[0];
+            const interval = setInterval(() => {
+                if (!this.els.stateLoading.classList.contains('active')) {
+                    clearInterval(interval); return;
+                }
+                i = (i + 1) % steps.length;
+                this.els.loadingText.textContent = steps[i];
+            }, 250);
+        }
+
+        renderResults(winners, backups) {
+            // Force Clear
+            this.els.resultContainer.innerHTML = ''; 
+            
+            const fragment = document.createDocumentFragment();
+            const winnerGroup = this._createResultGroup('🎉 正取名單', winners, 'winner');
+            fragment.appendChild(winnerGroup);
+            if (backups.length > 0) {
+                const backupGroup = this._createResultGroup('⚠️ 備取名單', backups, 'backup');
+                fragment.appendChild(backupGroup);
+            }
+            this.els.resultContainer.appendChild(fragment);
+            
+            // Force repaint hack
+            void this.els.resultContainer.offsetWidth;
+            
+            this._enableActions(true);
+        }
+
+        _createResultGroup(title, list, type) {
+            const header = Utils.dom('div', { className: 'group-header' },
+                Utils.dom('span', { text: title }),
+                Utils.dom('span', { text: list.length > 0 ? `${list.length} 人` : '無' })
+            );
+            const scrollArea = Utils.dom('div', { className: 'list-scroll' });
+            if (list.length === 0) {
+                scrollArea.appendChild(Utils.dom('div', { style: { padding: '20px', textAlign: 'center', color: 'var(--color-text-muted)' }, text: '( 無 )' }));
+            } else {
+                const listFragment = document.createDocumentFragment();
+                const renderCount = Math.min(list.length, CONFIG.UI.MAX_RENDER_ITEMS);
+                for (let i = 0; i < renderCount; i++) {
+                    const prefix = type === 'backup' ? 'B' : '';
+                    const indexStr = `${prefix}${String(i + 1).padStart(2, '0')}`;
+                    const row = Utils.dom('div', { className: 'result-row' },
+                        Utils.dom('span', { className: 'index', text: indexStr }),
+                        Utils.dom('span', { className: 'name', text: list[i] })
+                    );
+                    listFragment.appendChild(row);
+                }
+                if (list.length > CONFIG.UI.MAX_RENDER_ITEMS) {
+                    listFragment.appendChild(Utils.dom('div', { style: { padding: '8px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem' }, text: `...還有 ${list.length - renderCount} 人 (請下載完整報告)` }));
+                }
+                scrollArea.appendChild(listFragment);
+            }
+            return Utils.dom('div', { className: `result-group ${type}` }, header, scrollArea);
+        }
+
+        _enableActions(enabled) {
+            this.els.btnCopy.disabled = !enabled;
+            this.els.btnDownload.disabled = !enabled;
+        }
+
+        showCopyFeedback() {
+            const btn = this.els.btnCopy;
+            const originalContent = btn.innerHTML;
+            btn.classList.add('copied');
+            btn.innerHTML = '<span>✔️ 已複製</span>';
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                btn.innerHTML = originalContent;
+            }, 2000);
+        }
+    }
+
+    class App {
+        constructor() {
+            this.engine = new LotteryEngine();
+            this.ui = new UIManager();
+            this.toast = new ToastService();
+            this.modal = new ModalService();
+            this.state = { currentReport: '' };
+            this.inputs = {
+                names: document.getElementById('input-names'),
+                countMain: document.getElementById('input-count-main'),
+                countBackup: document.getElementById('input-count-backup'),
+                toggleMemory: document.getElementById('toggle-memory'),
+                toggleDedup: document.getElementById('toggle-dedup'),
+                btnClear: document.getElementById('btn-clear')
+            };
+            this.init();
+        }
+
+        init() {
+            this.loadSettings();
+            this.bindEvents();
+            this.handleInputChange();
+        }
+
+        loadSettings() {
+            const getBool = (key, def) => { const val = Utils.safeStorageGet(key); return val === null ? def : val === 'true'; };
+            this.inputs.toggleMemory.checked = getBool(CONFIG.STORAGE_KEYS.MEMORY_ENABLED, false);
+            this.inputs.toggleDedup.checked = getBool(CONFIG.STORAGE_KEYS.DEDUP_ENABLED, true);
+            if (this.inputs.toggleMemory.checked) {
+                this.inputs.names.value = Utils.safeStorageGet(CONFIG.STORAGE_KEYS.NAMES) || '';
+            }
+        }
+
+        bindEvents() {
+            this.inputs.names.addEventListener('input', Utils.debounce(() => this.handleInputChange(), 300));
+            const bindToggle = (el, key, msg) => {
+                el.addEventListener('change', (e) => {
+                    Utils.safeStorageSet(key, e.target.checked);
+                    if (key === CONFIG.STORAGE_KEYS.DEDUP_ENABLED) this.handleInputChange();
+                    if (key === CONFIG.STORAGE_KEYS.MEMORY_ENABLED) this.handleMemoryToggle();
+                    this.toast.show(msg, 'success');
+                });
+            };
+            bindToggle(this.inputs.toggleMemory, CONFIG.STORAGE_KEYS.MEMORY_ENABLED, "記憶功能已更新");
+            bindToggle(this.inputs.toggleDedup, CONFIG.STORAGE_KEYS.DEDUP_ENABLED, "去重功能已更新");
+            this.inputs.btnClear.onclick = () => this.requestClear();
+            this.ui.els.btnRun.onclick = () => this.runLottery();
+            this.ui.els.btnCopy.onclick = () => this.copyResult();
+            this.ui.els.btnDownload.onclick = () => this.downloadResult();
+        }
+
+        handleInputChange() {
+            const raw = this.inputs.names.value;
+            const isDedup = this.inputs.toggleDedup.checked;
+            const processedNames = this.engine.processInput(raw, isDedup);
+            this.ui.updatePreview(processedNames);
+            if (this.inputs.toggleMemory.checked) { Utils.safeStorageSet(CONFIG.STORAGE_KEYS.NAMES, raw); }
+        }
+
+        handleMemoryToggle() {
+            if (this.inputs.toggleMemory.checked) { Utils.safeStorageSet(CONFIG.STORAGE_KEYS.NAMES, this.inputs.names.value); }
+            else { Utils.safeStorageRemove(CONFIG.STORAGE_KEYS.NAMES); }
+        }
+
+        requestClear() {
+            if (!this.inputs.names.value) return;
+            this.modal.confirm("確認清空", "您確定要清空所有輸入的名單嗎？", () => {
+                this.inputs.names.value = '';
+                this.handleInputChange();
+                this.toast.show("名單已清空");
+            });
+        }
+
+        async runLottery() {
+            const isDedup = this.inputs.toggleDedup.checked;
+            const names = this.engine.processInput(this.inputs.names.value, isDedup);
+            const mainCount = parseInt(this.inputs.countMain.value) || 0;
+            const backupCount = parseInt(this.inputs.countBackup.value) || 0;
+
+            if (names.length === 0) return this.toast.show("請先輸入名單", "error");
+            if (mainCount <= 0) return this.toast.show("正取人數必須大於 0", "error");
+
+            const execute = async () => {
+                // Clear UI first
+                this.ui.els.resultContainer.innerHTML = '';
+                
+                this.ui.setLoading(true);
+                await new Promise(resolve => setTimeout(resolve, CONFIG.UI.ANIMATION_DELAY));
+
+                try {
+                    const result = this.engine.draw(names, mainCount, backupCount);
+                    this.ui.renderResults(result.winners, result.backups);
+                    this.state.currentReport = this.engine.formatReport(result.winners, result.backups, names.length);
+                    this.toast.show("抽選完成", "success");
+                } catch (e) {
+                    console.error("Lottery Error:", e);
+                    this.toast.show("抽選失敗 (請查看 Console)", "error");
+                } finally {
+                    this.ui.setLoading(false);
+                }
+            };
+
+            if (names.length < (mainCount + backupCount)) {
+                this.modal.confirm("人數不足警告", `名單人數 (${names.length}) 少於總需求 (${mainCount + backupCount})。是否繼續？`, execute);
+            } else {
+                execute();
+            }
+        }
+
+        copyResult() {
+            if (!this.state.currentReport) return;
+            navigator.clipboard.writeText(this.state.currentReport)
+                .then(() => { this.toast.show("已複製報告"); this.ui.showCopyFeedback(); })
+                .catch(() => this.toast.show("複製失敗", "error"));
+        }
+
+        downloadResult() {
+            if (!this.state.currentReport) return;
+            const blob = new Blob([this.state.currentReport], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            // 優化檔名
-            const now = new Date();
-            const filename = `Lottery_Result_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.txt`;
-            a.download = filename;
+            a.download = Utils.generateFilename();
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
-    };
+    }
 
-    app.init();
+    document.addEventListener('DOMContentLoaded', () => { window.app = new App(); });
 </script>
 </body>
 </html>
